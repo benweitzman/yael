@@ -42,10 +42,13 @@ default-extensions:
 - DefaultSignatures
 - TypeApplications
 - ScopedTypeVariables
+- StrictData
+- PolyKinds
+- DeriveGeneric
 
 library:
   source-dirs: src
-
+  exposed-modules: Yael.Eff
 
 executables:
   yael-exe:

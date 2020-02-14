@@ -9,25 +9,38 @@ import Control.Monad.Trans.Maybe
 import Control.Monad
 
 data T m = T
-  { _op' :: m Int
-  , _hop' :: m Int -> m [Int]
-  , _mop' :: m (Maybe Int)
+  { _op :: m Int
+  , _hop :: m Int -> m [Int]
+  , _mop :: m (Maybe Int)
   }
 
-makeLenses ''T
+dummyT :: Monad m => T m
+dummyT = T
+  { _op = return 3
+  , _hop = replicateM 10
+  , _mop = return Nothing
+  }
 
 op :: Int :+ '[T]
-op = asksEff >>= (^. op')
+op = asksEff >>= _op
 
 hop :: HasEffs '[T] m => m Int -> m [Int]
 hop mx = do
   t <- asksEff
-  t ^. hop' $ mx
+  _hop t mx
 
 mop :: Maybe Int :+ '[T]
-mop = asksEff >>= (^. mop')
+mop = asksEff >>= _mop
 
-someFunc :: Maybe (Int, [Int], [Int]) :+ '[T]
+
+newtype Q m = Q
+  { _qop :: m Bool
+  }
+
+qop :: Bool :+ '[Q]
+qop = asksEff >>= _qop
+
+someFunc :: Maybe (Int, [Int], [Int], Bool) :+ '[T, Q] :/ '[Bool]
 someFunc = runMaybeT $ do
   x <- lift op
   y <- lift $ hop op
@@ -36,7 +49,10 @@ someFunc = runMaybeT $ do
     return $ case even $ sum xs of
       True -> Just xs
       _ -> Nothing
-  return (x, y, z)
+  w <- lift qop
+  when w $ return ()
+  d <- lift asksEff
+  return (x, y, z, d)
 
 someFunc' :: (HasEffs '[T] m, MonadPlus m) => m (Int, [Int], [Int])
 someFunc' = do
@@ -53,8 +69,15 @@ reify ma = (Just <$> ma) `mplus` return Nothing
 reify' :: Monad m => (forall n . MonadPlus n => n a) -> m (Maybe a)
 reify' = runMaybeT
 
+data NoOp (m :: * -> *) = NoOp
+ deriving Show
+
 main :: IO ()
 main = do
   v <- someFunc
-    & flip runEffT T{}
+    & runEffT
+    $
+    Q{ _qop = return False}
+    :<> dummyT
+    :<> Const True
   print v
