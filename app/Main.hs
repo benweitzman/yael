@@ -61,15 +61,6 @@ someFunc' = do
   _ <- mzero
   return (x, [x], [x])
 
-someFunc'' :: (HasEffs '[T] m, MonadPlus m) => m (Maybe (Int, [Int], [Int]))
-someFunc'' = reify someFunc'
-
-reify :: MonadPlus m => m a -> m (Maybe a)
-reify ma = (Just <$> ma) `mplus` return Nothing
-
-reify' :: Monad m => (forall n . MonadPlus n => n a) -> m (Maybe a)
-reify' = runMaybeT
-
 data NoOp (m :: * -> *) = NoOp
  deriving Show
 
