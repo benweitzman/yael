@@ -23,9 +23,11 @@ dependencies:
 - base >= 4.7 && < 5
 - mtl >= 2.2.2 && < 2.3
 - transformers >= 0.5.6.2 && < 0.6
+- transformers-base
 - unliftio
 - lens
 - exceptions
+- monad-control
 
 default-extensions:
 - TypeFamilies
@@ -48,7 +50,9 @@ default-extensions:
 
 library:
   source-dirs: src
-  exposed-modules: Yael.Eff
+  exposed-modules:
+  - Yael.Eff
+  - Yael.Eff.Log
 
 executables:
   yael-exe:
@@ -63,6 +67,8 @@ executables:
     - mtl
     - transformers
     - lens
+    - lifted-base
+    - monad-control
 
 tests:
   yael-test:

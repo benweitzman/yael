@@ -17,11 +17,13 @@ import UnliftIO (MonadUnliftIO(..), withUnliftIO, UnliftIO(..))
 import Data.Function ((&))
 import GHC.TypeLits
 import GHC.Generics
+import Control.Monad.Base
+import Control.Monad.Trans.Control
 
 newtype EffT f m a = EffT
   { unEffT :: R.ReaderT (f (EffT f m)) m a
   } deriving newtype ( Functor, Applicative, Monad, MonadIO, MonadThrow, MonadCatch
-                     , MonadMask, MonadPlus, Alternative)
+                     , MonadMask, MonadPlus, Alternative, MonadBase s, MonadBaseControl s)
 
 runEffT :: EffT f m a -> f (EffT f m) -> m a
 runEffT = R.runReaderT . unEffT

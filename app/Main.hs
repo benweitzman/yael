@@ -4,9 +4,13 @@ module Main where
 
 import Control.Lens ((^.), makeLenses)
 import Yael.Eff
+import Yael.Eff.Log
+import Yael.Eff.Async
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
 import Control.Monad
+import Control.Monad.Trans.Control
+import Control.Concurrent.Lifted
 
 data T m = T
   { _op :: m Int
@@ -40,7 +44,11 @@ newtype Q m = Q
 qop :: Bool :+ '[Q]
 qop = asksEff >>= _qop
 
-someFunc :: Maybe (Int, [Int], [Int], Bool, Bool) :+ '[T, Q] :/ '[Bool]
+someFunc
+  :: (HasEffs '[T, Q, Log, Async] m
+     ,Has Bool m
+     )
+  => m (Maybe (Int, [Int], [Int], Bool, Bool))
 someFunc = runMaybeT $ do
   x <- lift op
   y <- lift $ hop op
@@ -50,7 +58,7 @@ someFunc = runMaybeT $ do
       True -> Just xs
       _ -> Nothing
   w <- lift qop
-  when w $ return ()
+  when w . void . lift . async $ logg "I'm here!"
   d <- lift asksEff
   g <- lift . locallyEff not $ asksEff
   return (x, y, z, d, g)
@@ -68,8 +76,9 @@ main :: IO ()
 main = do
   v <- someFunc
     & runEffT
-    $
-    Q{ _qop = return False}
+    $ Q{ _qop = return True}
     :<> dummyT
     :<> Const False
+    :<> stdoutLog
+    :<> concurrentAsync
   print v
