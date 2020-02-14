@@ -7,7 +7,7 @@ module Yael.Eff
   , module Yael.Eff
   ) where
 
-import Control.Lens ((^.), Lens', lens, Field1(_1), Field2(_2))
+import Control.Lens ((^.), Lens', lens, Field1(_1), Field2(_2), (%~))
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
@@ -115,6 +115,9 @@ type HasEff f m = Has (f m) m
 
 asksEff :: (Has a m) => m a
 asksEff = (^. prj) <$> askEff
+
+locallyEff :: (Has a m) => (a -> a) -> m x -> m x
+locallyEff f mx = localEff (prj %~ f)  mx
 
 data AccessType where
   Effect :: f -> AccessType

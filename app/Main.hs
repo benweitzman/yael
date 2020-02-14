@@ -40,7 +40,7 @@ newtype Q m = Q
 qop :: Bool :+ '[Q]
 qop = asksEff >>= _qop
 
-someFunc :: Maybe (Int, [Int], [Int], Bool) :+ '[T, Q] :/ '[Bool]
+someFunc :: Maybe (Int, [Int], [Int], Bool, Bool) :+ '[T, Q] :/ '[Bool]
 someFunc = runMaybeT $ do
   x <- lift op
   y <- lift $ hop op
@@ -52,7 +52,8 @@ someFunc = runMaybeT $ do
   w <- lift qop
   when w $ return ()
   d <- lift asksEff
-  return (x, y, z, d)
+  g <- lift . locallyEff not $ asksEff
+  return (x, y, z, d, g)
 
 someFunc' :: (HasEffs '[T] m, MonadPlus m) => m (Int, [Int], [Int])
 someFunc' = do
@@ -79,5 +80,5 @@ main = do
     $
     Q{ _qop = return False}
     :<> dummyT
-    :<> Const True
+    :<> Const False
   print v
