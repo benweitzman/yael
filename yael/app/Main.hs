@@ -1,16 +1,13 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Main where
 
-import Control.Lens ((^.), makeLenses)
 import Yael.Eff
 import Yael.Eff.Log
 import Yael.Eff.Async
+import Yael.Eff.Data
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
 import Control.Monad
-import Control.Monad.Trans.Control
-import Control.Concurrent.Lifted
+import Data.Function ((&))
 
 data T m = T
   { _op :: m Int
@@ -26,29 +23,24 @@ dummyT = T
   }
 
 op :: Int :+ '[T]
-op = asksEff >>= _op
+op = withEffT _op
 
-hop :: HasEffs '[T] m => m Int -> m [Int]
-hop mx = do
-  t <- asksEff
-  _hop t mx
+hop :: (HasEffs '[T] f m) => EffT f m Int -> EffT f m [Int]
+hop mx = withEffT' $ \lower T{_hop} -> _hop (lower mx)
 
 mop :: Maybe Int :+ '[T]
-mop = asksEff >>= _mop
-
+mop = withEffT _mop
 
 newtype Q m = Q
   { _qop :: m Bool
   }
 
 qop :: Bool :+ '[Q]
-qop = asksEff >>= _qop
+qop = withEffT _qop
 
 someFunc
-  :: (HasEffs '[T, Q, Log, Async] m
-     ,Has Bool m
-     )
-  => m (Maybe (Int, [Int], [Int], Bool, Bool))
+  :: (HasEffs '[T, Q, Log, Async, Data Bool, Data String] f m)
+  => EffT f m (Maybe (Int, [Int], [Int], Bool, Bool))
 someFunc = runMaybeT $ do
   x <- lift op
   y <- lift $ hop op
@@ -58,12 +50,13 @@ someFunc = runMaybeT $ do
       True -> Just xs
       _ -> Nothing
   w <- lift qop
-  when w . void . lift . async $ logg "I'm here!"
-  d <- lift asksEff
-  g <- lift . locallyEff not $ asksEff
+  when w . void . lift . async $ writeLog "I'm here!"
+  d <- lift getData
+  g <- lift . localData not $ getData
+  lift $ getData >>= writeLog
   return (x, y, z, d, g)
 
-someFunc' :: (HasEffs '[T] m, MonadPlus m) => m (Int, [Int], [Int])
+someFunc' :: (HasEffs '[T] f m, MonadPlus m) => EffT f m (Int, [Int], [Int])
 someFunc' = do
   x <- op
   _ <- mzero
@@ -78,7 +71,8 @@ main = do
     & runEffT
     $ Q{ _qop = return True}
     :<> dummyT
-    :<> Const False
+    :<> Data False
+    :<> Data "hello"
     :<> stdoutLog
     :<> concurrentAsync
   print v
