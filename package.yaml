@@ -25,3 +25,5 @@
   - PolyKinds
   - DeriveGeneric
   - PatternSynonyms
+  - GADTs
+  - StandaloneDeriving

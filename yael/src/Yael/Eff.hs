@@ -192,6 +192,7 @@ infix 7 :+
 -- on the effectful context `f` or computational context `m`.
 --
 -- Example:
+--
 -- @
 -- myFunction :: String -> [Int] :+ '[MyEffect]
 -- myFunction s = do
