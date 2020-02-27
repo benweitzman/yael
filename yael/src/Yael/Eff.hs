@@ -30,6 +30,10 @@ module Yael.Eff
   , runEffT
   , withEffT
   , withEffT'
+  , withEffT''
+  , Lower
+  , Raise
+  , type (~>)
   , localEffT
   , mapEffT
   , HasEff
@@ -112,9 +116,27 @@ withEffT use = withEffT' $ const use
 -- @
 withEffT'
   :: (HasEff g f m)
-  => (forall n . Monad n => (forall x . EffT f m x -> n x) -> g n -> n a)
+  => (forall n . Monad n => Lower f m n -> g n -> n a)
   -> EffT f m a
-withEffT' use = EffT $ \f -> use (\e -> runEffT e f) (f ^. prj)
+withEffT' use = withEffT'' $ \lower _ g -> use lower g
+
+type f ~> g = forall x . f x -> g x
+
+type Lower f m n = EffT f m ~> n
+
+type Raise f m n = n ~> EffT f m
+
+withEffT''
+  :: (HasEff g f m)
+  => (forall n
+      . Monad n
+      => Lower f m n
+      -> Raise f m n
+      -> g n
+      -> n a
+     )
+  -> EffT f m a
+withEffT'' use = EffT $ \f -> use (\e -> runEffT e f) lift (f ^. prj)
 
 
 -- | Modify a computational context. Useful for attaching behavior to a specific
