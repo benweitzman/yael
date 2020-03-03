@@ -15,10 +15,7 @@ dependencies:
 - yael
 - text
 - opentracing
-- higgledy
-- barbies
-- lens
-- mtl
+- safe-exceptions
 
 default-extensions:
   *default-extensions
