@@ -41,6 +41,7 @@ module Yael.Eff
   , (:+)
   , (:<>)(..)
   , Project(..)
+  , HigherOrder(..)
   ) where
 
 import Control.Lens ((^.), Lens', lens, Field1(_1), Field2(_2), (%~))
@@ -224,3 +225,8 @@ infix 7 :+
 --     False -> return [17]
 -- @
 type (:+) v effs = forall m f . (HasEffs effs f m) => EffT f m v
+
+-- | Helper for deriving Generic on effects with polymorphic methods
+newtype HigherOrder n (m  :: * -> *) = HigherOrder
+  { applyHigherOrder :: forall a . n a -> m a
+  }

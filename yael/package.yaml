@@ -60,3 +60,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - yael
+    - hspec
+    - quickcheck
