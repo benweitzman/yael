@@ -14,6 +14,7 @@ module Yael.Eff.OpenTracing
 import Control.Exception.Safe
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.Trans.Class
 import Data.Proxy
 import qualified Data.Text as T
 import GHC.Exts
@@ -48,17 +49,19 @@ otTracing
   => Reader ParentSpan m
   -> OT.Tracer
   -> Tracing m
-otTracing Reader{_ask,_local} tracer' = Tracing
-  { _spanning = \opts block -> traced_ tracer' opts $ \activeSpan ->
-      _local (const $ Just activeSpan) block
+otTracing r tracer' = Tracing
+  { _spanning = \opts block -> shareEffT r $ \lower -> do
+      lift . traced_ tracer' opts $ \activeSpan ->
+        lower $ local (const $ Just activeSpan) (lift block)
 
-  , _modifyActive = \f -> do
-      mActive <- _ask
-      void . forM mActive $ \active ->
-        liftIO $ OT.modifyActiveSpan active f
+  , _modifyActive = \f -> flip runEffT r $ do
+      mActive <- ask
+      case mActive of
+        Nothing -> return ()
+        Just active -> liftIO $ OT.modifyActiveSpan active f
 
-  , _mkSpanOpts = \name f -> do
-      parent <- _ask
+  , _mkSpanOpts = \name f -> flip runEffT r $ do
+      parent <- ask
       return . f . spanOpts name $ maybe mempty childOf parent
   }
 

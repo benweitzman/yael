@@ -28,6 +28,7 @@ module Yael.Eff
   ( EffT
   , pattern EffT
   , runEffT
+  , shareEffT
   , withEffT
   , withEffT'
   , withEffT''
@@ -66,6 +67,9 @@ newtype EffT (f :: (* -> *) -> *) (m :: * -> *) (a :: *) = MkEffT
                      , MonadBaseControl s)
 
 pattern EffT r = MkEffT (R.ReaderT r)
+
+shareEffT :: f m -> (Lower f m m -> EffT f m a) -> m a
+shareEffT fm f = runEffT (f $ flip runEffT fm) fm
 
 -- | Run an effectful computation of `f` in `m` by providing a particular
 -- instantiation of that effect.

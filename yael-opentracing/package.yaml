@@ -16,6 +16,7 @@ dependencies:
 - text
 - opentracing
 - safe-exceptions
+- transformers
 
 default-extensions:
   *default-extensions
