@@ -26,8 +26,8 @@ connPersistent conn = Persistent
   { _runPersistent = flip runSqlConn conn
   }
 
-sqlPersistent :: (MonadUnliftIO m, MonadLoggerIO m) => Sql m -> Persistent m
-sqlPersistent Sql{_withSqlConn} = Persistent
+postgresPersistent :: (MonadUnliftIO m, MonadLoggerIO m) => Postgres m -> Persistent m
+postgresPersistent Postgres{_withSqlConn} = Persistent
   { _runPersistent = \p -> _withSqlConn $ \conn -> do
       logFunc <- askLoggerIO
       pConn <- liftIO $ openSimpleConn logFunc conn
