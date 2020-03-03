@@ -63,8 +63,8 @@ import Control.Monad.Trans.Control
 newtype EffT (f :: (* -> *) -> *) (m :: * -> *) (a :: *) = MkEffT
   { unEffT :: R.ReaderT (f m) m a
   } deriving newtype ( Functor, Applicative, Monad, MonadIO, MonadThrow
-                     , MonadCatch, MonadMask, MonadPlus, Alternative, MonadBase s
-                     , MonadBaseControl s)
+                     , MonadCatch, MonadMask, MonadPlus, Alternative
+                     , MonadBase s, MonadBaseControl s)
 
 pattern EffT r = MkEffT (R.ReaderT r)
 
