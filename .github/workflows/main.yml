@@ -2,7 +2,7 @@
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request 
+# Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   push:
@@ -28,9 +28,9 @@ jobs:
     - name: Cache .stack
       uses: actions/cache@v1.1.2
       with:
-        path: .stack
+        path: ~/.stack
         key: dot-stack
-        
+
     - name: Cache .stack-work
       uses: actions/cache@v1.1.2
       with:
