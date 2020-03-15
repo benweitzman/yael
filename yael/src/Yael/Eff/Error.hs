@@ -20,7 +20,6 @@ catch
 catch m f = withEffT' $ \lower Error{_catch} ->
   _catch (lower m) (lower . f)
 
-
 type UncheckedError = Error Ex.SomeException
 
 mtlError :: E.MonadError e m => Error e m
@@ -36,7 +35,6 @@ exceptionError = Error
   { _throw = Ex.throw
   , _catch = Ex.catch
   }
-
 
 throwAny :: Ex.Exception e => e -> a :+ '[UncheckedError]
 throwAny = throw . Ex.toException

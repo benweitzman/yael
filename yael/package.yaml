@@ -64,4 +64,4 @@ tests:
     dependencies:
     - yael
     - hspec
-    - quickcheck
+    - QuickCheck

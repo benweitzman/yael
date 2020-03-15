@@ -28,6 +28,7 @@ module Yael.Eff
   ( EffT
   , pattern EffT
   , runEffT
+  , liftEffT
   , shareEffT
   , withEffT
   , withEffT'
@@ -66,6 +67,7 @@ newtype EffT (f :: (* -> *) -> *) (m :: * -> *) (a :: *) = MkEffT
                      , MonadCatch, MonadMask, MonadPlus, Alternative
                      , MonadBase s, MonadBaseControl s)
 
+pattern EffT :: (f m -> m a) -> EffT f m a
 pattern EffT r = MkEffT (R.ReaderT r)
 
 shareEffT :: f m -> (Lower f m m -> EffT f m a) -> m a
@@ -79,6 +81,12 @@ runEffT
   -> f m
   -> m a
 runEffT (EffT r) y = r y
+
+
+-- | Synonym for the `EffT` constructor. Lift a computation in @m@ with access to the
+-- effect @f@ into @EffT f m@
+liftEffT :: (f m -> m a) -> EffT f m a
+liftEffT = EffT
 
 instance MonadUnliftIO m => MonadUnliftIO (EffT f m) where
   {-# INLINE askUnliftIO #-}
