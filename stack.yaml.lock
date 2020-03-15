@@ -18,14 +18,14 @@ packages:
       sha256: 459cbb176e1b16c01f2ea7be0c6b8d9a342ad0c656a86595bb5c6e91cc176c06
     name: opentracing
     version: 0.1.0.0
-    git: git@github.com:benweitzman/opentracing.git
+    git: https://github.com/benweitzman/opentracing.git
     pantry-tree:
       size: 1151
       sha256: fb314593463bd496707a6fc9b49692dfaf43288c0021ff0d6e9b86b1ee416db3
     commit: 795434c9b38ca4fd4d6c6c2849387b87be584258
   original:
     subdir: opentracing
-    git: git@github.com:benweitzman/opentracing.git
+    git: https://github.com/benweitzman/opentracing.git
     commit: 795434c9b38ca4fd4d6c6c2849387b87be584258
 snapshots:
 - completed:

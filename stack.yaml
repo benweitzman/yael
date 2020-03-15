@@ -69,7 +69,7 @@ packages:
 # compiler-check: newer-minor
 extra-deps:
 - higgledy-0.3.1.0@sha256:fa3e3cb4e92e76b0fa6ce7212e12f8e479ceb1b276a6e8edf152b8c5b6834888,2031
-- git: git@github.com:benweitzman/opentracing.git
+- git: https://github.com/benweitzman/opentracing.git
   commit: 795434c9b38ca4fd4d6c6c2849387b87be584258
   subdirs:
     - opentracing
