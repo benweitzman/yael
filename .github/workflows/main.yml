@@ -25,6 +25,18 @@ jobs:
     - name: Setup stack
       uses: mstksg/setup-stack@v2
 
+    - name: Cache .stack
+      uses: actions/cache@v1.1.2
+      with:
+        path: .stack
+        key: dot-stack
+        
+    - name: Cache .stack-work
+      uses: actions/cache@v1.1.2
+      with:
+        path: .stack-work
+        key: dot-stack-work
+
     # Runs a single command using the runners shell
     - name: Build
       run: stack build
