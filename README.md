@@ -1,4 +1,5 @@
 # Yael 
+![CI](https://github.com/benweitzman/yael/workflows/CI/badge.svg) [![Docs](https://img.shields.io/badge/docs-master-yellowgreen)](https://benweitzman.github.io/yael/doc/yael-0.1.0.0/)
 
 Yet Another Effect Library
 
