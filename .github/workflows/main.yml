@@ -50,8 +50,8 @@ jobs:
     - name: Create public dir
       run: mkdir public
 
-    - name: Copy code coverage
-      run: mv $(stack path --local-hpc-root) public/coverage/
+    # - name: Copy code coverage
+    #  run: mv $(stack path --local-hpc-root) public/coverage/
 
     - name: Copy docs
       run: mv $(stack path --local-doc-root) public/
