@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><a name="line-2"></a><span class="hs-comment">-- |</span><span>
+</span><a name="line-3"></a><span class="hs-comment">-- Module      :  Data.Barbie</span><span>
+</span><a name="line-4"></a><span class="hs-comment">--</span><span>
+</span><a name="line-5"></a><span class="hs-comment">-- Support for operating on Barbie-types with constrained functions.</span><span>
+</span><a name="line-6"></a><span class="hs-comment">--</span><span>
+</span><a name="line-7"></a><span class="hs-comment">-- Consider the following function:</span><span>
+</span><a name="line-8"></a><span class="hs-comment">--</span><span>
+</span><a name="line-9"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-10"></a><span class="hs-comment">-- showIt :: 'Show' a =&gt; 'Maybe' a -&gt; 'Data.Functor.Const' 'String' a</span><span>
+</span><a name="line-11"></a><span class="hs-comment">-- showIt = 'Data.Functor.Const' . 'show'</span><span>
+</span><a name="line-12"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-13"></a><span class="hs-comment">--</span><span>
+</span><a name="line-14"></a><span class="hs-comment">-- We would then like to be able to do:</span><span>
+</span><a name="line-15"></a><span class="hs-comment">--</span><span>
+</span><a name="line-16"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-17"></a><span class="hs-comment">-- 'Data.Barbie.bmap' 'showIt' :: 'Data.Barbie.FunctorB' b =&gt; b 'Maybe' -&gt; b ('Data.Functor.Const' 'String')</span><span>
+</span><a name="line-18"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-19"></a><span class="hs-comment">--</span><span>
+</span><a name="line-20"></a><span class="hs-comment">-- This however doesn't work because of the @('Show' a)@ constraint in the</span><span>
+</span><a name="line-21"></a><span class="hs-comment">-- the type of @showIt@.</span><span>
+</span><a name="line-22"></a><span class="hs-comment">--</span><span>
+</span><a name="line-23"></a><span class="hs-comment">-- This module adds support to overcome this problem.</span><span>
+</span><a name="line-24"></a><span class="hs-comment">----------------------------------------------------------------------------</span><span>
+</span><a name="line-25"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Barbie.Constraints</span><span>
+</span><a name="line-26"></a><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-comment">-- * Instance dictionaries</span><span>
+</span><a name="line-27"></a><span>    </span><a href="Data.Barbie.Internal.Dicts.html#Dict"><span class="hs-identifier hs-type">Dict</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-28"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Dicts.html#requiringDict"><span class="hs-identifier hs-var">requiringDict</span></a><span>
+</span><a name="line-29"></a><span>
+</span><a name="line-30"></a><span>    </span><span class="hs-comment">-- * Retrieving dictionaries</span><span>
+</span><a name="line-31"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#ConstraintsB"><span class="hs-identifier hs-type">ConstraintsB</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-32"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#ProductBC"><span class="hs-identifier hs-type">ProductBC</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-33"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#bmapC"><span class="hs-identifier hs-var">bmapC</span></a><span>
+</span><a name="line-34"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#btraverseC"><span class="hs-identifier hs-var">btraverseC</span></a><span>
+</span><a name="line-35"></a><span>
+</span><a name="line-36"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#AllBF"><span class="hs-identifier hs-type">AllBF</span></a><span>
+</span><a name="line-37"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Dicts.html#ClassF"><span class="hs-identifier hs-type">ClassF</span></a><span>
+</span><a name="line-38"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Dicts.html#ClassFG"><span class="hs-identifier hs-type">ClassFG</span></a><span>
+</span><a name="line-39"></a><span>
+</span><a name="line-40"></a><span>    </span><span class="hs-comment">-- * Deprecated</span><span>
+</span><a name="line-41"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#ConstraintsOf"><span class="hs-identifier hs-type">ConstraintsOf</span></a><span>
+</span><a name="line-42"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#adjProof"><span class="hs-identifier hs-var">adjProof</span></a><span>
+</span><a name="line-43"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#ProofB"><span class="hs-identifier hs-type">ProofB</span></a><span>
+</span><a name="line-44"></a><span>  </span><span class="hs-special">)</span><span>
+</span><a name="line-45"></a><span>
+</span><a name="line-46"></a><span class="hs-keyword">where</span><span>
+</span><a name="line-47"></a><span>
+</span><a name="line-48"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.Constraints.html"><span class="hs-identifier">Data.Barbie.Internal.Constraints</span></a><span>
+</span><a name="line-49"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.Dicts.html"><span class="hs-identifier">Data.Barbie.Internal.Dicts</span></a><span>
+</span><a name="line-50"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.ProductC.html"><span class="hs-identifier">Data.Barbie.Internal.ProductC</span></a><span>
+</span><a name="line-51"></a></pre></body></html>

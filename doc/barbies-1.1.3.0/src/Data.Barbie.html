@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-----------------------------------------------------------------------------</span><span>
+</span><a name="line-2"></a><span class="hs-comment">-- |</span><span>
+</span><a name="line-3"></a><span class="hs-comment">-- Module      :  Data.Barbie</span><span>
+</span><a name="line-4"></a><span class="hs-comment">--</span><span>
+</span><a name="line-5"></a><span class="hs-comment">-- A common Haskell idiom is to parameterise a datatype by a type @k -&gt; *@,</span><span>
+</span><a name="line-6"></a><span class="hs-comment">-- typically a functor or a GADT. These are like outfits of a Barbie,</span><span>
+</span><a name="line-7"></a><span class="hs-comment">-- that turn her into a different doll. E.g.</span><span>
+</span><a name="line-8"></a><span class="hs-comment">--</span><span>
+</span><a name="line-9"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-10"></a><span class="hs-comment">-- data Barbie f</span><span>
+</span><a name="line-11"></a><span class="hs-comment">--   = Barbie</span><span>
+</span><a name="line-12"></a><span class="hs-comment">--       { name :: f 'String'</span><span>
+</span><a name="line-13"></a><span class="hs-comment">--       , age  :: f 'Int'</span><span>
+</span><a name="line-14"></a><span class="hs-comment">--       }</span><span>
+</span><a name="line-15"></a><span class="hs-comment">--</span><span>
+</span><a name="line-16"></a><span class="hs-comment">-- b1 :: Barbie 'Data.Monoid.Last'       -- Barbie with a monoid structure</span><span>
+</span><a name="line-17"></a><span class="hs-comment">-- b2 :: Barbie ('Data.Functor.Const.Const' a)  -- 'Data.Barbie.Container.Container' Barbie</span><span>
+</span><a name="line-18"></a><span class="hs-comment">-- b3 :: Barbie 'Data.Functor.Identity.Identity'   -- Barbie's new clothes</span><span>
+</span><a name="line-19"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-20"></a><span class="hs-comment">--</span><span>
+</span><a name="line-21"></a><span class="hs-comment">-- This module define the classes to work with these types and easily</span><span>
+</span><a name="line-22"></a><span class="hs-comment">-- transform them. They all come with default instances based on</span><span>
+</span><a name="line-23"></a><span class="hs-comment">-- `GHC.Generics.Generic`, so using them is as easy as:</span><span>
+</span><a name="line-24"></a><span class="hs-comment">--</span><span>
+</span><a name="line-25"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-26"></a><span class="hs-comment">-- data Barbie f</span><span>
+</span><a name="line-27"></a><span class="hs-comment">--   = Barbie</span><span>
+</span><a name="line-28"></a><span class="hs-comment">--       { name :: f 'String'</span><span>
+</span><a name="line-29"></a><span class="hs-comment">--       , age  :: f 'Int'</span><span>
+</span><a name="line-30"></a><span class="hs-comment">--       }</span><span>
+</span><a name="line-31"></a><span class="hs-comment">--   deriving</span><span>
+</span><a name="line-32"></a><span class="hs-comment">--     ( 'GHC.Generics.Generic'</span><span>
+</span><a name="line-33"></a><span class="hs-comment">--     , 'FunctorB', 'TraversableB', 'ProductB', 'ConstraintsB', 'ProductBC'</span><span>
+</span><a name="line-34"></a><span class="hs-comment">--     )</span><span>
+</span><a name="line-35"></a><span class="hs-comment">--</span><span>
+</span><a name="line-36"></a><span class="hs-comment">-- deriving instance 'AllBF' 'Show' f Barbie =&gt; 'Show' (Barbie f)</span><span>
+</span><a name="line-37"></a><span class="hs-comment">-- deriving instance 'AllBF' 'Eq'   f Barbie =&gt; 'Eq'   (Barbie f)</span><span>
+</span><a name="line-38"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-39"></a><span class="hs-comment">--</span><span>
+</span><a name="line-40"></a><span class="hs-comment">-- Sometimes one wants to use @Barbie 'Data.Functor.Identity.Identity'@</span><span>
+</span><a name="line-41"></a><span class="hs-comment">-- and it may feel like a second-class record type, where one needs to</span><span>
+</span><a name="line-42"></a><span class="hs-comment">-- unpack values in each field. &quot;Data.Barbie.Bare&quot; offers a way to have</span><span>
+</span><a name="line-43"></a><span class="hs-comment">-- bare versions of a barbie-type.</span><span>
+</span><a name="line-44"></a><span class="hs-comment">--</span><span>
+</span><a name="line-45"></a><span class="hs-comment">-- Notice that all classes in this package are poly-kinded. Intuitively,</span><span>
+</span><a name="line-46"></a><span class="hs-comment">-- a barbie is a type parameterised by a functor, and because a barbies is</span><span>
+</span><a name="line-47"></a><span class="hs-comment">-- a type of functor, a type parameterised by a barbie is a (higher-kinded)</span><span>
+</span><a name="line-48"></a><span class="hs-comment">-- barbie too:</span><span>
+</span><a name="line-49"></a><span class="hs-comment">--</span><span>
+</span><a name="line-50"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-51"></a><span class="hs-comment">-- data Catalog b</span><span>
+</span><a name="line-52"></a><span class="hs-comment">--   = Catalog (b 'Identity') (b 'Maybe')</span><span>
+</span><a name="line-53"></a><span class="hs-comment">--   deriving</span><span>
+</span><a name="line-54"></a><span class="hs-comment">--     ('GHC.Generics.Generic'</span><span>
+</span><a name="line-55"></a><span class="hs-comment">--     , 'FunctorB', 'TraversableB', 'ProductB', 'ConstraintsB', 'ProductBC'</span><span>
+</span><a name="line-56"></a><span class="hs-comment">--     )</span><span>
+</span><a name="line-57"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-58"></a><span>
+</span><a name="line-59"></a><span>
+</span><a name="line-60"></a><span class="hs-comment">----------------------------------------------------------------------------</span><span>
+</span><a name="line-61"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Barbie</span><span>
+</span><a name="line-62"></a><span>  </span><span class="hs-special">(</span><span>
+</span><a name="line-63"></a><span>    </span><span class="hs-comment">-- * Functor</span><span>
+</span><a name="line-64"></a><span>    </span><a href="Data.Barbie.Internal.Functor.html#FunctorB"><span class="hs-identifier hs-type">FunctorB</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.Functor.html#bmap"><span class="hs-identifier hs-var">bmap</span></a><span class="hs-special">)</span><span>
+</span><a name="line-65"></a><span>
+</span><a name="line-66"></a><span>    </span><span class="hs-comment">-- * Traversable</span><span>
+</span><a name="line-67"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#TraversableB"><span class="hs-identifier hs-type">TraversableB</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.Traversable.html#btraverse"><span class="hs-identifier hs-var">btraverse</span></a><span class="hs-special">)</span><span>
+</span><a name="line-68"></a><span>    </span><span class="hs-comment">-- ** Utility functions</span><span>
+</span><a name="line-69"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#btraverse_"><span class="hs-identifier hs-var">btraverse_</span></a><span>
+</span><a name="line-70"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#bfoldMap"><span class="hs-identifier hs-var">bfoldMap</span></a><span>
+</span><a name="line-71"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#bsequence"><span class="hs-identifier hs-var">bsequence</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#bsequence%27"><span class="hs-identifier hs-var">bsequence'</span></a><span>
+</span><a name="line-72"></a><span>
+</span><a name="line-73"></a><span>    </span><span class="hs-comment">-- * Product</span><span>
+</span><a name="line-74"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#ProductB"><span class="hs-identifier hs-type">ProductB</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.Product.html#buniq"><span class="hs-identifier hs-var">buniq</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bprod"><span class="hs-identifier hs-var">bprod</span></a><span class="hs-special">)</span><span>
+</span><a name="line-75"></a><span>    </span><span class="hs-comment">-- ** Utility functions</span><span>
+</span><a name="line-76"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzip"><span class="hs-identifier hs-var">bzip</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bunzip"><span class="hs-identifier hs-var">bunzip</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzipWith"><span class="hs-identifier hs-var">bzipWith</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzipWith3"><span class="hs-identifier hs-var">bzipWith3</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzipWith4"><span class="hs-identifier hs-var">bzipWith4</span></a><span>
+</span><a name="line-77"></a><span>    </span><span class="hs-comment">-- ** Applicative-like interface</span><span>
+</span><a name="line-78"></a><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Data.Barbie.Internal.Product.html#%2F%2A%2F"><span class="hs-operator hs-var">/*/</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Data.Barbie.Internal.Product.html#%2F%2A"><span class="hs-operator hs-var">/*</span></a><span class="hs-special">)</span><span>
+</span><a name="line-79"></a><span>
+</span><a name="line-80"></a><span>    </span><span class="hs-comment">-- * Constraints and instance dictionaries</span><span>
+</span><a name="line-81"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#ConstraintsB"><span class="hs-identifier hs-type">ConstraintsB</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.Constraints.html#AllB"><span class="hs-identifier hs-var">AllB</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#baddDicts"><span class="hs-identifier hs-var">baddDicts</span></a><span class="hs-special">)</span><span>
+</span><a name="line-82"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#AllBF"><span class="hs-identifier hs-type">AllBF</span></a><span>
+</span><a name="line-83"></a><span>    </span><span class="hs-comment">-- ** Utility functions</span><span>
+</span><a name="line-84"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#bmapC"><span class="hs-identifier hs-var">bmapC</span></a><span>
+</span><a name="line-85"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#btraverseC"><span class="hs-identifier hs-var">btraverseC</span></a><span>
+</span><a name="line-86"></a><span>
+</span><a name="line-87"></a><span>    </span><span class="hs-comment">-- * Products and constaints</span><span>
+</span><a name="line-88"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#ProductBC"><span class="hs-identifier hs-type">ProductBC</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.ProductC.html#bdicts"><span class="hs-identifier hs-var">bdicts</span></a><span class="hs-special">)</span><span>
+</span><a name="line-89"></a><span>    </span><span class="hs-comment">-- ** Utility functions</span><span>
+</span><a name="line-90"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#buniqC"><span class="hs-identifier hs-var">buniqC</span></a><span>
+</span><a name="line-91"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#bmempty"><span class="hs-identifier hs-var">bmempty</span></a><span>
+</span><a name="line-92"></a><span>
+</span><a name="line-93"></a><span>    </span><span class="hs-comment">-- * Wrapper</span><span>
+</span><a name="line-94"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Instances.html#Barbie"><span class="hs-identifier hs-type">Barbie</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-95"></a><span>
+</span><a name="line-96"></a><span>    </span><span class="hs-comment">-- * Trivial Barbies</span><span>
+</span><a name="line-97"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Trivial.html#Void"><span class="hs-identifier hs-type">Void</span></a><span>
+</span><a name="line-98"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Trivial.html#Unit"><span class="hs-identifier hs-type">Unit</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-99"></a><span>
+</span><a name="line-100"></a><span>    </span><span class="hs-comment">-- * Generic derivations</span><span>
+</span><a name="line-101"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Generics.GenericN.html#Rec"><span class="hs-identifier hs-type">Rec</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-102"></a><span>
+</span><a name="line-103"></a><span>    </span><span class="hs-comment">-- * Deprecations</span><span>
+</span><a name="line-104"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#ConstraintsOf"><span class="hs-identifier hs-type">Deprecated.ConstraintsOf</span></a><span>
+</span><a name="line-105"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#adjProof"><span class="hs-identifier hs-var">Deprecated.adjProof</span></a><span>
+</span><a name="line-106"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#ProofB"><span class="hs-identifier hs-type">Deprecated.ProofB</span></a><span>
+</span><a name="line-107"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#bproof"><span class="hs-identifier hs-var">Deprecated.bproof</span></a><span>
+</span><a name="line-108"></a><span>  </span><span class="hs-special">)</span><span>
+</span><a name="line-109"></a><span>
+</span><a name="line-110"></a><span class="hs-keyword">where</span><span>
+</span><a name="line-111"></a><span>
+</span><a name="line-112"></a><span class="hs-keyword">import</span><span>           </span><a href="Data.Barbie.Internal.Constraints.html"><span class="hs-identifier">Data.Barbie.Internal.Constraints</span></a><span> </span><span class="hs-special">(</span><a href="Data.Barbie.Internal.Constraints.html#AllBF"><span class="hs-identifier hs-type">AllBF</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#ConstraintsB"><span class="hs-identifier hs-type">ConstraintsB</span></a><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#bmapC"><span class="hs-identifier hs-var">bmapC</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Constraints.html#btraverseC"><span class="hs-identifier hs-var">btraverseC</span></a><span class="hs-special">)</span><span>
+</span><a name="line-113"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Data.Barbie.Internal.Constraints.html"><span class="hs-identifier">Data.Barbie.Internal.Constraints</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">Deprecated</span><span>
+</span><a name="line-114"></a><span>
+</span><a name="line-115"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.Functor.html"><span class="hs-identifier">Data.Barbie.Internal.Functor</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.Functor.html#FunctorB"><span class="hs-identifier hs-type">FunctorB</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-116"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.Instances.html"><span class="hs-identifier">Data.Barbie.Internal.Instances</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.Instances.html#Barbie"><span class="hs-identifier hs-type">Barbie</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-117"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.Product.html"><span class="hs-identifier">Data.Barbie.Internal.Product</span></a><span>
+</span><a name="line-118"></a><span>  </span><span class="hs-special">(</span><span> </span><a href="Data.Barbie.Internal.Product.html#ProductB"><span class="hs-identifier hs-type">ProductB</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-119"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzip"><span class="hs-identifier hs-var">bzip</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bunzip"><span class="hs-identifier hs-var">bunzip</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzipWith"><span class="hs-identifier hs-var">bzipWith</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzipWith3"><span class="hs-identifier hs-var">bzipWith3</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Product.html#bzipWith4"><span class="hs-identifier hs-var">bzipWith4</span></a><span>
+</span><a name="line-120"></a><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Data.Barbie.Internal.Product.html#%2F%2A%2F"><span class="hs-operator hs-var">/*/</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Data.Barbie.Internal.Product.html#%2F%2A"><span class="hs-operator hs-var">/*</span></a><span class="hs-special">)</span><span>
+</span><a name="line-121"></a><span>  </span><span class="hs-special">)</span><span>
+</span><a name="line-122"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.ProductC.html"><span class="hs-identifier">Data.Barbie.Internal.ProductC</span></a><span class="hs-special">(</span><a href="Data.Barbie.Internal.ProductC.html#ProductBC"><span class="hs-identifier hs-type">ProductBC</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#buniqC"><span class="hs-identifier hs-var">buniqC</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.ProductC.html#bmempty"><span class="hs-identifier hs-var">bmempty</span></a><span class="hs-special">)</span><span>
+</span><a name="line-123"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Data.Barbie.Internal.ProductC.html"><span class="hs-identifier">Data.Barbie.Internal.ProductC</span></a><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">Deprecated</span><span>
+</span><a name="line-124"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Internal.Traversable.html"><span class="hs-identifier">Data.Barbie.Internal.Traversable</span></a><span>
+</span><a name="line-125"></a><span>  </span><span class="hs-special">(</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#TraversableB"><span class="hs-identifier hs-type">TraversableB</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-126"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#bsequence"><span class="hs-identifier hs-var">bsequence</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#bsequence%27"><span class="hs-identifier hs-var">bsequence'</span></a><span>
+</span><a name="line-127"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#bfoldMap"><span class="hs-identifier hs-var">bfoldMap</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Traversable.html#btraverse_"><span class="hs-identifier hs-var">btraverse_</span></a><span>
+</span><a name="line-128"></a><span>  </span><span class="hs-special">)</span><span>
+</span><a name="line-129"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Barbie.Trivial.html"><span class="hs-identifier">Data.Barbie.Trivial</span></a><span class="hs-special">(</span><a href="Data.Barbie.Trivial.html#Void"><span class="hs-identifier hs-type">Void</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Trivial.html#Unit"><span class="hs-identifier hs-type">Unit</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-130"></a><span class="hs-keyword">import</span><span> </span><a href="Data.Generics.GenericN.html"><span class="hs-identifier">Data.Generics.GenericN</span></a><span> </span><span class="hs-special">(</span><a href="Data.Generics.GenericN.html#Rec"><span class="hs-identifier hs-type">Rec</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-131"></a></pre></body></html>

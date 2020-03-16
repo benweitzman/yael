@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">------------------------------------------------------------------------------</span><span>
+</span><a name="line-2"></a><span class="hs-comment">-- |</span><span>
+</span><a name="line-3"></a><span class="hs-comment">-- Module:      Database.PostgreSQL.Simple.HStore</span><span>
+</span><a name="line-4"></a><span class="hs-comment">-- Copyright:   (c) 2013 Leon P Smith</span><span>
+</span><a name="line-5"></a><span class="hs-comment">-- License:     BSD3</span><span>
+</span><a name="line-6"></a><span class="hs-comment">-- Maintainer:  Leon P Smith &lt;leon@melding-monads.com&gt;</span><span>
+</span><a name="line-7"></a><span class="hs-comment">-- Stability:   experimental</span><span>
+</span><a name="line-8"></a><span class="hs-comment">--</span><span>
+</span><a name="line-9"></a><span class="hs-comment">-- Parsers and printers for hstore,  a extended type bundled with</span><span>
+</span><a name="line-10"></a><span class="hs-comment">-- PostgreSQL providing finite maps from text strings to text strings.</span><span>
+</span><a name="line-11"></a><span class="hs-comment">-- See &lt;https://www.postgresql.org/docs/9.5/static/hstore.html&gt; for more</span><span>
+</span><a name="line-12"></a><span class="hs-comment">-- information.</span><span>
+</span><a name="line-13"></a><span class="hs-comment">--</span><span>
+</span><a name="line-14"></a><span class="hs-comment">-- Note that in order to use this type,  a database superuser must</span><span>
+</span><a name="line-15"></a><span class="hs-comment">-- install it by running a sql script in the share directory.  This</span><span>
+</span><a name="line-16"></a><span class="hs-comment">-- can be done on PostgreSQL 9.1 and later with the command</span><span>
+</span><a name="line-17"></a><span class="hs-comment">-- @CREATE EXTENSION hstore@.  See</span><span>
+</span><a name="line-18"></a><span class="hs-comment">-- &lt;https://www.postgresql.org/docs/9.5/static/contrib.html&gt; for more</span><span>
+</span><a name="line-19"></a><span class="hs-comment">-- information.</span><span>
+</span><a name="line-20"></a><span class="hs-comment">--</span><span>
+</span><a name="line-21"></a><span class="hs-comment">------------------------------------------------------------------------------</span><span>
+</span><a name="line-22"></a><span>
+</span><a name="line-23"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Database.PostgreSQL.Simple.HStore</span><span>
+</span><a name="line-24"></a><span>     </span><span class="hs-special">(</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#HStoreList"><span class="hs-identifier hs-type">HStoreList</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-25"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#HStoreMap"><span class="hs-identifier hs-type">HStoreMap</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-26"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#ToHStore"><span class="hs-identifier hs-type">ToHStore</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-27"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#HStoreBuilder"><span class="hs-identifier hs-type">HStoreBuilder</span></a><span>
+</span><a name="line-28"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#toBuilder"><span class="hs-identifier hs-var">toBuilder</span></a><span>
+</span><a name="line-29"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#toLazyByteString"><span class="hs-identifier hs-var">toLazyByteString</span></a><span>
+</span><a name="line-30"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#hstore"><span class="hs-identifier hs-var">hstore</span></a><span>
+</span><a name="line-31"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#parseHStoreList"><span class="hs-identifier hs-var">parseHStoreList</span></a><span>
+</span><a name="line-32"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#ToHStoreText"><span class="hs-identifier hs-type">ToHStoreText</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-33"></a><span>     </span><span class="hs-special">,</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html#HStoreText"><span class="hs-identifier hs-type">HStoreText</span></a><span>
+</span><a name="line-34"></a><span>     </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-35"></a><span>
+</span><a name="line-36"></a><span class="hs-keyword">import</span><span> </span><a href="Database.PostgreSQL.Simple.HStore.Implementation.html"><span class="hs-identifier">Database.PostgreSQL.Simple.HStore.Implementation</span></a><span>
+</span><a name="line-37"></a></pre></body></html>

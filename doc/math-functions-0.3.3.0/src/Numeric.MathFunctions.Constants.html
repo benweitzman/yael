@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- |</span><span>
+</span><a name="line-2"></a><span class="hs-comment">-- Module    : Numeric.MathFunctions.Constants</span><span>
+</span><a name="line-3"></a><span class="hs-comment">-- Copyright : (c) 2009, 2011 Bryan O'Sullivan</span><span>
+</span><a name="line-4"></a><span class="hs-comment">-- License   : BSD3</span><span>
+</span><a name="line-5"></a><span class="hs-comment">--</span><span>
+</span><a name="line-6"></a><span class="hs-comment">-- Maintainer  : bos@serpentine.com</span><span>
+</span><a name="line-7"></a><span class="hs-comment">-- Stability   : experimental</span><span>
+</span><a name="line-8"></a><span class="hs-comment">-- Portability : portable</span><span>
+</span><a name="line-9"></a><span class="hs-comment">--</span><span>
+</span><a name="line-10"></a><span class="hs-comment">-- Constant values common to much numeric code.</span><span>
+</span><a name="line-11"></a><span>
+</span><a name="line-12"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Numeric.MathFunctions.Constants</span><span>
+</span><a name="line-13"></a><span>    </span><span class="hs-special">(</span><span>
+</span><a name="line-14"></a><span>      </span><span class="hs-comment">-- * IEE754 constants</span><span>
+</span><a name="line-15"></a><span>      </span><a href="Numeric.MathFunctions.Constants.html#m_epsilon"><span class="hs-identifier hs-var">m_epsilon</span></a><span>
+</span><a name="line-16"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_sqrt_eps"><span class="hs-identifier hs-var">m_sqrt_eps</span></a><span>
+</span><a name="line-17"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_huge"><span class="hs-identifier hs-var">m_huge</span></a><span>
+</span><a name="line-18"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_tiny"><span class="hs-identifier hs-var">m_tiny</span></a><span>
+</span><a name="line-19"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_max_exp"><span class="hs-identifier hs-var">m_max_exp</span></a><span>
+</span><a name="line-20"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_pos_inf"><span class="hs-identifier hs-var">m_pos_inf</span></a><span>
+</span><a name="line-21"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_neg_inf"><span class="hs-identifier hs-var">m_neg_inf</span></a><span>
+</span><a name="line-22"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_NaN"><span class="hs-identifier hs-var">m_NaN</span></a><span>
+</span><a name="line-23"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_max_log"><span class="hs-identifier hs-var">m_max_log</span></a><span>
+</span><a name="line-24"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_min_log"><span class="hs-identifier hs-var">m_min_log</span></a><span>
+</span><a name="line-25"></a><span>      </span><span class="hs-comment">-- * Mathematical constants</span><span>
+</span><a name="line-26"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_1_sqrt_2"><span class="hs-identifier hs-var">m_1_sqrt_2</span></a><span>
+</span><a name="line-27"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_2_sqrt_pi"><span class="hs-identifier hs-var">m_2_sqrt_pi</span></a><span>
+</span><a name="line-28"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_ln_sqrt_2_pi"><span class="hs-identifier hs-var">m_ln_sqrt_2_pi</span></a><span>
+</span><a name="line-29"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_sqrt_2"><span class="hs-identifier hs-var">m_sqrt_2</span></a><span>
+</span><a name="line-30"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_sqrt_2_pi"><span class="hs-identifier hs-var">m_sqrt_2_pi</span></a><span>
+</span><a name="line-31"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Numeric.MathFunctions.Constants.html#m_eulerMascheroni"><span class="hs-identifier hs-var">m_eulerMascheroni</span></a><span>
+</span><a name="line-32"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-33"></a><span>
+</span><a name="line-34"></a><span class="hs-comment">----------------------------------------------------------------</span><span>
+</span><a name="line-35"></a><span class="hs-comment">-- IEE754 constants</span><span>
+</span><a name="line-36"></a><span class="hs-comment">----------------------------------------------------------------</span><span>
+</span><a name="line-37"></a><span>
+</span><a name="line-38"></a><span class="hs-comment">-- | Largest representable finite value.</span><span>
+</span><a name="line-39"></a><span class="hs-identifier">m_huge</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-40"></a><a name="m_huge"><a href="Numeric.MathFunctions.Constants.html#m_huge"><span class="hs-identifier">m_huge</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">1.7976931348623157e308</span><span>
+</span><a name="line-41"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_huge</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-42"></a><span>
+</span><a name="line-43"></a><span class="hs-comment">-- | The smallest representable positive normalized value.</span><span>
+</span><a name="line-44"></a><span class="hs-identifier">m_tiny</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-45"></a><a name="m_tiny"><a href="Numeric.MathFunctions.Constants.html#m_tiny"><span class="hs-identifier">m_tiny</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">2.2250738585072014e-308</span><span>
+</span><a name="line-46"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_tiny</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-47"></a><span>
+</span><a name="line-48"></a><span class="hs-comment">-- | The largest 'Int' /x/ such that 2**(/x/-1) is approximately</span><span>
+</span><a name="line-49"></a><span class="hs-comment">-- representable as a 'Double'.</span><span>
+</span><a name="line-50"></a><span class="hs-identifier">m_max_exp</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Int</span><span>
+</span><a name="line-51"></a><a name="m_max_exp"><a href="Numeric.MathFunctions.Constants.html#m_max_exp"><span class="hs-identifier">m_max_exp</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">1024</span><span>
+</span><a name="line-52"></a><span>
+</span><a name="line-53"></a><span class="hs-comment">-- | Positive infinity.</span><span>
+</span><a name="line-54"></a><span class="hs-identifier">m_pos_inf</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-55"></a><a name="m_pos_inf"><a href="Numeric.MathFunctions.Constants.html#m_pos_inf"><span class="hs-identifier">m_pos_inf</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">1</span><span class="hs-operator hs-var">/</span><span class="hs-number">0</span><span>
+</span><a name="line-56"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_pos_inf</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-57"></a><span>
+</span><a name="line-58"></a><span class="hs-comment">-- | Negative infinity.</span><span>
+</span><a name="line-59"></a><span class="hs-identifier">m_neg_inf</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-60"></a><a name="m_neg_inf"><a href="Numeric.MathFunctions.Constants.html#m_neg_inf"><span class="hs-identifier">m_neg_inf</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">-</span><span class="hs-number">1</span><span class="hs-operator hs-var">/</span><span class="hs-number">0</span><span>
+</span><a name="line-61"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_neg_inf</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-62"></a><span>
+</span><a name="line-63"></a><span class="hs-comment">-- | Not a number.</span><span>
+</span><a name="line-64"></a><span class="hs-identifier">m_NaN</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-65"></a><a name="m_NaN"><a href="Numeric.MathFunctions.Constants.html#m_NaN"><span class="hs-identifier">m_NaN</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">0</span><span class="hs-operator hs-var">/</span><span class="hs-number">0</span><span>
+</span><a name="line-66"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_NaN</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-67"></a><span>
+</span><a name="line-68"></a><span class="hs-comment">-- | Maximum possible finite value of @log x@</span><span>
+</span><a name="line-69"></a><span class="hs-identifier">m_max_log</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-70"></a><a name="m_max_log"><a href="Numeric.MathFunctions.Constants.html#m_max_log"><span class="hs-identifier">m_max_log</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">709.782712893384</span><span>
+</span><a name="line-71"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_max_log</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-72"></a><span>
+</span><a name="line-73"></a><span class="hs-comment">-- | Logarithm of smallest normalized double ('m_tiny')</span><span>
+</span><a name="line-74"></a><span class="hs-identifier">m_min_log</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-75"></a><a name="m_min_log"><a href="Numeric.MathFunctions.Constants.html#m_min_log"><span class="hs-identifier">m_min_log</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">-</span><span class="hs-number">708.3964185322641</span><span>
+</span><a name="line-76"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_min_log</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-77"></a><span>
+</span><a name="line-78"></a><span>
+</span><a name="line-79"></a><span class="hs-comment">----------------------------------------------------------------</span><span>
+</span><a name="line-80"></a><span class="hs-comment">-- Mathematical constants</span><span>
+</span><a name="line-81"></a><span class="hs-comment">----------------------------------------------------------------</span><span>
+</span><a name="line-82"></a><span>
+</span><a name="line-83"></a><span class="hs-comment">-- | @sqrt 2@</span><span>
+</span><a name="line-84"></a><span class="hs-identifier">m_sqrt_2</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-85"></a><a name="m_sqrt_2"><a href="Numeric.MathFunctions.Constants.html#m_sqrt_2"><span class="hs-identifier">m_sqrt_2</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">1.4142135623730950488016887242096980785696718753769480731766</span><span>
+</span><a name="line-86"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_sqrt_2</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-87"></a><span>
+</span><a name="line-88"></a><span class="hs-comment">-- | @sqrt (2 * pi)@</span><span>
+</span><a name="line-89"></a><span class="hs-identifier">m_sqrt_2_pi</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-90"></a><a name="m_sqrt_2_pi"><a href="Numeric.MathFunctions.Constants.html#m_sqrt_2_pi"><span class="hs-identifier">m_sqrt_2_pi</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">2.5066282746310005024157652848110452530069867406099383166299</span><span>
+</span><a name="line-91"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_sqrt_2_pi</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-92"></a><span>
+</span><a name="line-93"></a><span class="hs-comment">-- | @2 / sqrt pi@</span><span>
+</span><a name="line-94"></a><span class="hs-identifier">m_2_sqrt_pi</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-95"></a><a name="m_2_sqrt_pi"><a href="Numeric.MathFunctions.Constants.html#m_2_sqrt_pi"><span class="hs-identifier">m_2_sqrt_pi</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">1.1283791670955125738961589031215451716881012586579977136881</span><span>
+</span><a name="line-96"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_2_sqrt_pi</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-97"></a><span>
+</span><a name="line-98"></a><span class="hs-comment">-- | @1 / sqrt 2@</span><span>
+</span><a name="line-99"></a><span class="hs-identifier">m_1_sqrt_2</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-100"></a><a name="m_1_sqrt_2"><a href="Numeric.MathFunctions.Constants.html#m_1_sqrt_2"><span class="hs-identifier">m_1_sqrt_2</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">0.7071067811865475244008443621048490392848359376884740365883</span><span>
+</span><a name="line-101"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_1_sqrt_2</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-102"></a><span>
+</span><a name="line-103"></a><span class="hs-comment">-- | The smallest 'Double' &amp;#949; such that 1 + &amp;#949; &amp;#8800; 1.</span><span>
+</span><a name="line-104"></a><span class="hs-identifier">m_epsilon</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-105"></a><a name="m_epsilon"><a href="Numeric.MathFunctions.Constants.html#m_epsilon"><span class="hs-identifier">m_epsilon</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">encodeFloat</span><span> </span><span class="hs-special">(</span><a href="#local-6989586621679039740"><span class="hs-identifier hs-var">signif</span></a><span class="hs-operator hs-var">+</span><span class="hs-number">1</span><span class="hs-special">)</span><span> </span><a href="#local-6989586621679039741"><span class="hs-identifier hs-var">expo</span></a><span> </span><span class="hs-glyph">-</span><span> </span><span class="hs-number">1.0</span><span>
+</span><a name="line-106"></a><span>    </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679039740"><a href="#local-6989586621679039740"><span class="hs-identifier">signif</span></a></a><span class="hs-special">,</span><a name="local-6989586621679039741"><a href="#local-6989586621679039741"><span class="hs-identifier">expo</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">decodeFloat</span><span> </span><span class="hs-special">(</span><span class="hs-number">1.0</span><span class="hs-glyph">::</span><span class="hs-identifier hs-type">Double</span><span class="hs-special">)</span><span>
+</span><a name="line-107"></a><span>
+</span><a name="line-108"></a><span class="hs-comment">-- | @sqrt m_epsilon@</span><span>
+</span><a name="line-109"></a><span class="hs-comment">--</span><span>
+</span><a name="line-110"></a><span class="hs-comment">-- @since 0.3.3.0</span><span>
+</span><a name="line-111"></a><span class="hs-identifier">m_sqrt_eps</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-112"></a><a name="m_sqrt_eps"><a href="Numeric.MathFunctions.Constants.html#m_sqrt_eps"><span class="hs-identifier">m_sqrt_eps</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">1.4901161193847656e-8</span><span>
+</span><a name="line-113"></a><span>
+</span><a name="line-114"></a><span class="hs-comment">-- | @log(sqrt((2*pi))@</span><span>
+</span><a name="line-115"></a><span class="hs-identifier">m_ln_sqrt_2_pi</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-116"></a><a name="m_ln_sqrt_2_pi"><a href="Numeric.MathFunctions.Constants.html#m_ln_sqrt_2_pi"><span class="hs-identifier">m_ln_sqrt_2_pi</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">0.9189385332046727417803297364056176398613974736377834128171</span><span>
+</span><a name="line-117"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_ln_sqrt_2_pi</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-118"></a><span>
+</span><a name="line-119"></a><span class="hs-comment">-- | Euler&#8211;Mascheroni constant (&#947; = 0.57721...)</span><span>
+</span><a name="line-120"></a><span class="hs-identifier">m_eulerMascheroni</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Double</span><span>
+</span><a name="line-121"></a><a name="m_eulerMascheroni"><a href="Numeric.MathFunctions.Constants.html#m_eulerMascheroni"><span class="hs-identifier">m_eulerMascheroni</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-number">0.5772156649015328606065121</span><span>
+</span><a name="line-122"></a><span class="hs-pragma">{-# INLINE</span><span> </span><span class="hs-pragma">m_eulerMascheroni</span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><a name="line-123"></a></pre></body></html>

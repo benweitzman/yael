@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# OPTIONS_GHC -fno-warn-orphans #-}</span><span>
+</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><a name="line-3"></a><span>
+</span><a name="line-4"></a><span class="hs-comment">-- | Filter operators for JSON values added to PostgreSQL 9.4</span><span>
+</span><a name="line-5"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Database.Persist.Postgresql.JSON</span><span>
+</span><a name="line-6"></a><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.Postgresql.JSON.html#%40%3E."><span class="hs-operator hs-var">@&gt;.</span></a><span class="hs-special">)</span><span>
+</span><a name="line-7"></a><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.Postgresql.JSON.html#%3C%40."><span class="hs-operator hs-var">&lt;@.</span></a><span class="hs-special">)</span><span>
+</span><a name="line-8"></a><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Value</span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><a name="line-9"></a><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-10"></a><span>
+</span><a name="line-11"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Aeson</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">FromJSON</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">ToJSON</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Value</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">encode</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">eitherDecodeStrict</span><span class="hs-special">)</span><span>
+</span><a name="line-12"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Data.ByteString.Lazy</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">BSL</span><span>
+</span><a name="line-13"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Proxy</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Proxy</span><span class="hs-special">)</span><span>
+</span><a name="line-14"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Text</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">T</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Text</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">pack</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">concat</span><span class="hs-special">)</span><span>
+</span><a name="line-15"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Text.Encoding</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">TE</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">encodeUtf8</span><span class="hs-special">)</span><span>
+</span><a name="line-16"></a><span>
+</span><a name="line-17"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Database.Persist</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">EntityField</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Filter</span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">PersistValue</span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">PersistField</span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">PersistFilter</span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-18"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Database.Persist.Sql</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">PersistFieldSql</span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">SqlType</span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-19"></a><span>
+</span><a name="line-20"></a><span>
+</span><a name="line-21"></a><span class="hs-keyword">infix</span><span> </span><span class="hs-number">4</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#%40%3E."><span class="hs-operator hs-var">@&gt;.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#%3C%40."><span class="hs-operator hs-var">&lt;@.</span></a><span>
+</span><a name="line-22"></a><span>
+</span><a name="line-23"></a><span class="hs-comment">-- | This operator checks inclusion of the JSON value</span><span>
+</span><a name="line-24"></a><span class="hs-comment">-- on the right hand side in the JSON value on the left</span><span>
+</span><a name="line-25"></a><span class="hs-comment">-- hand side.</span><span>
+</span><a name="line-26"></a><span class="hs-comment">--</span><span>
+</span><a name="line-27"></a><span class="hs-comment">-- === __Objects__</span><span>
+</span><a name="line-28"></a><span class="hs-comment">--</span><span>
+</span><a name="line-29"></a><span class="hs-comment">-- An empty Object matches any object</span><span>
+</span><a name="line-30"></a><span class="hs-comment">--</span><span>
+</span><a name="line-31"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-32"></a><span class="hs-comment">-- {}                \@&gt; {} == True</span><span>
+</span><a name="line-33"></a><span class="hs-comment">-- {&quot;a&quot;:1,&quot;b&quot;:false} \@&gt; {} == True</span><span>
+</span><a name="line-34"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-35"></a><span class="hs-comment">--</span><span>
+</span><a name="line-36"></a><span class="hs-comment">-- Any key-value will be matched top-level</span><span>
+</span><a name="line-37"></a><span class="hs-comment">--</span><span>
+</span><a name="line-38"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-39"></a><span class="hs-comment">-- {&quot;a&quot;:1,&quot;b&quot;:{&quot;c&quot;:true&quot;}} \@&gt; {&quot;a&quot;:1}         == True</span><span>
+</span><a name="line-40"></a><span class="hs-comment">-- {&quot;a&quot;:1,&quot;b&quot;:{&quot;c&quot;:true&quot;}} \@&gt; {&quot;b&quot;:1}         == False</span><span>
+</span><a name="line-41"></a><span class="hs-comment">-- {&quot;a&quot;:1,&quot;b&quot;:{&quot;c&quot;:true&quot;}} \@&gt; {&quot;b&quot;:{}}        == True</span><span>
+</span><a name="line-42"></a><span class="hs-comment">-- {&quot;a&quot;:1,&quot;b&quot;:{&quot;c&quot;:true&quot;}} \@&gt; {&quot;c&quot;:true}      == False</span><span>
+</span><a name="line-43"></a><span class="hs-comment">-- {&quot;a&quot;:1,&quot;b&quot;:{&quot;c&quot;:true&quot;}} \@&gt; {&quot;b&quot;:{c&quot;:true}} == True</span><span>
+</span><a name="line-44"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-45"></a><span class="hs-comment">--</span><span>
+</span><a name="line-46"></a><span class="hs-comment">-- === __Arrays__</span><span>
+</span><a name="line-47"></a><span class="hs-comment">--</span><span>
+</span><a name="line-48"></a><span class="hs-comment">-- An empty Array matches any array</span><span>
+</span><a name="line-49"></a><span class="hs-comment">--</span><span>
+</span><a name="line-50"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-51"></a><span class="hs-comment">-- []                    \@&gt; [] == True</span><span>
+</span><a name="line-52"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; [] == True</span><span>
+</span><a name="line-53"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-54"></a><span class="hs-comment">--</span><span>
+</span><a name="line-55"></a><span class="hs-comment">-- Any array has to be a sub-set.</span><span>
+</span><a name="line-56"></a><span class="hs-comment">-- Any object or array will also be compared as being a subset of.</span><span>
+</span><a name="line-57"></a><span class="hs-comment">--</span><span>
+</span><a name="line-58"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-59"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; [1]                       == True</span><span>
+</span><a name="line-60"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; [null,&quot;hi&quot;]               == True</span><span>
+</span><a name="line-61"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; [&quot;hi&quot;,true]               == False</span><span>
+</span><a name="line-62"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; [&quot;hi&quot;,2,null,false,1]     == True</span><span>
+</span><a name="line-63"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; [1,2,&quot;hi&quot;,false,null,{}]  == False</span><span>
+</span><a name="line-64"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-65"></a><span class="hs-comment">--</span><span>
+</span><a name="line-66"></a><span class="hs-comment">-- Arrays and objects inside arrays match the same way they'd</span><span>
+</span><a name="line-67"></a><span class="hs-comment">-- be matched as being on their own.</span><span>
+</span><a name="line-68"></a><span class="hs-comment">--</span><span>
+</span><a name="line-69"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-70"></a><span class="hs-comment">-- [1,&quot;hi&quot;,[false,3],{&quot;a&quot;:[null]}] \@&gt; [{}]            == True</span><span>
+</span><a name="line-71"></a><span class="hs-comment">-- [1,&quot;hi&quot;,[false,3],{&quot;a&quot;:[null]}] \@&gt; [{&quot;a&quot;:[]}]      == True</span><span>
+</span><a name="line-72"></a><span class="hs-comment">-- [1,&quot;hi&quot;,[false,3],{&quot;a&quot;:[null]}] \@&gt; [{&quot;b&quot;:[null]}]  == False</span><span>
+</span><a name="line-73"></a><span class="hs-comment">-- [1,&quot;hi&quot;,[false,3],{&quot;a&quot;:[null]}] \@&gt; [[]]            == True</span><span>
+</span><a name="line-74"></a><span class="hs-comment">-- [1,&quot;hi&quot;,[false,3],{&quot;a&quot;:[null]}] \@&gt; [[3]]           == True</span><span>
+</span><a name="line-75"></a><span class="hs-comment">-- [1,&quot;hi&quot;,[false,3],{&quot;a&quot;:[null]}] \@&gt; [[true,3]]      == False</span><span>
+</span><a name="line-76"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-77"></a><span class="hs-comment">--</span><span>
+</span><a name="line-78"></a><span class="hs-comment">-- A regular value has to be a member</span><span>
+</span><a name="line-79"></a><span class="hs-comment">--</span><span>
+</span><a name="line-80"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-81"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; 1      == True</span><span>
+</span><a name="line-82"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; 5      == False</span><span>
+</span><a name="line-83"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; &quot;hi&quot;   == True</span><span>
+</span><a name="line-84"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; false  == True</span><span>
+</span><a name="line-85"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,false,null] \@&gt; &quot;2&quot;    == False</span><span>
+</span><a name="line-86"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-87"></a><span class="hs-comment">--</span><span>
+</span><a name="line-88"></a><span class="hs-comment">-- An object will never match with an array</span><span>
+</span><a name="line-89"></a><span class="hs-comment">--</span><span>
+</span><a name="line-90"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-91"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,[false,3],{&quot;a&quot;:null}] \@&gt; {}          == False</span><span>
+</span><a name="line-92"></a><span class="hs-comment">-- [1,2,&quot;hi&quot;,[false,3],{&quot;a&quot;:null}] \@&gt; {&quot;a&quot;:null}  == False</span><span>
+</span><a name="line-93"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-94"></a><span class="hs-comment">--</span><span>
+</span><a name="line-95"></a><span class="hs-comment">-- === __Other values__</span><span>
+</span><a name="line-96"></a><span class="hs-comment">--</span><span>
+</span><a name="line-97"></a><span class="hs-comment">-- For any other JSON values the `(\@&gt;.)` operator</span><span>
+</span><a name="line-98"></a><span class="hs-comment">-- functions like an equivalence operator.</span><span>
+</span><a name="line-99"></a><span class="hs-comment">--</span><span>
+</span><a name="line-100"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-101"></a><span class="hs-comment">-- &quot;hello&quot; \@&gt; &quot;hello&quot;     == True</span><span>
+</span><a name="line-102"></a><span class="hs-comment">-- &quot;hello&quot; \@&gt; \&quot;Hello&quot;     == False</span><span>
+</span><a name="line-103"></a><span class="hs-comment">-- &quot;hello&quot; \@&gt; &quot;h&quot;         == False</span><span>
+</span><a name="line-104"></a><span class="hs-comment">-- &quot;hello&quot; \@&gt; {&quot;hello&quot;:1} == False</span><span>
+</span><a name="line-105"></a><span class="hs-comment">-- &quot;hello&quot; \@&gt; [&quot;hello&quot;]   == False</span><span>
+</span><a name="line-106"></a><span class="hs-comment">--</span><span>
+</span><a name="line-107"></a><span class="hs-comment">-- 5       \@&gt; 5       == True</span><span>
+</span><a name="line-108"></a><span class="hs-comment">-- 5       \@&gt; 5.00    == True</span><span>
+</span><a name="line-109"></a><span class="hs-comment">-- 5       \@&gt; 1       == False</span><span>
+</span><a name="line-110"></a><span class="hs-comment">-- 5       \@&gt; 7       == False</span><span>
+</span><a name="line-111"></a><span class="hs-comment">-- 12345   \@&gt; 1234    == False</span><span>
+</span><a name="line-112"></a><span class="hs-comment">-- 12345   \@&gt; 2345    == False</span><span>
+</span><a name="line-113"></a><span class="hs-comment">-- 12345   \@&gt; &quot;12345&quot; == False</span><span>
+</span><a name="line-114"></a><span class="hs-comment">-- 12345   \@&gt; [1,2,3,4,5] == False</span><span>
+</span><a name="line-115"></a><span class="hs-comment">--</span><span>
+</span><a name="line-116"></a><span class="hs-comment">-- true    \@&gt; true    == True</span><span>
+</span><a name="line-117"></a><span class="hs-comment">-- true    \@&gt; false   == False</span><span>
+</span><a name="line-118"></a><span class="hs-comment">-- false   \@&gt; true    == False</span><span>
+</span><a name="line-119"></a><span class="hs-comment">-- true    \@&gt; &quot;true&quot;  == False</span><span>
+</span><a name="line-120"></a><span class="hs-comment">--</span><span>
+</span><a name="line-121"></a><span class="hs-comment">-- null    \@&gt; null    == True</span><span>
+</span><a name="line-122"></a><span class="hs-comment">-- null    \@&gt; 23      == False</span><span>
+</span><a name="line-123"></a><span class="hs-comment">-- null    \@&gt; &quot;null&quot;  == False</span><span>
+</span><a name="line-124"></a><span class="hs-comment">-- null    \@&gt; {}      == False</span><span>
+</span><a name="line-125"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-126"></a><span class="hs-comment">--</span><span>
+</span><a name="line-127"></a><span class="hs-comment">-- @since 2.8.2</span><span>
+</span><a name="line-128"></a><span class="hs-special">(</span><span class="hs-operator">@&gt;.</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">EntityField</span><span> </span><a href="#local-6989586621679133413"><span class="hs-identifier hs-type">record</span></a><span> </span><span class="hs-identifier hs-type">Value</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Value</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Filter</span><span> </span><a href="#local-6989586621679133413"><span class="hs-identifier hs-type">record</span></a><span>
+</span><a name="line-129"></a><span class="hs-special">(</span><a name="%40%3E."><a href="Database.Persist.Postgresql.JSON.html#%40%3E."><span class="hs-operator">@&gt;.</span></a></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679133414"><a href="#local-6989586621679133414"><span class="hs-identifier">field</span></a></a><span> </span><a name="local-6989586621679133415"><a href="#local-6989586621679133415"><span class="hs-identifier">val</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">Filter</span><span> </span><a href="#local-6989586621679133414"><span class="hs-identifier hs-var">field</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679133415"><span class="hs-identifier hs-var">val</span></a><span class="hs-special">)</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">BackendSpecificFilter</span><span> </span><span class="hs-string">&quot; @&gt; &quot;</span><span>
+</span><a name="line-130"></a><span>
+</span><a name="line-131"></a><span class="hs-comment">-- | Same as '@&gt;.' except the inclusion check is reversed.</span><span>
+</span><a name="line-132"></a><span class="hs-comment">-- i.e. is the JSON value on the left hand side included</span><span>
+</span><a name="line-133"></a><span class="hs-comment">-- in the JSON value of the right hand side.</span><span>
+</span><a name="line-134"></a><span class="hs-comment">--</span><span>
+</span><a name="line-135"></a><span class="hs-comment">-- @since 2.8.2</span><span>
+</span><a name="line-136"></a><span class="hs-special">(</span><span class="hs-operator">&lt;@.</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">EntityField</span><span> </span><a href="#local-6989586621679133412"><span class="hs-identifier hs-type">record</span></a><span> </span><span class="hs-identifier hs-type">Value</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Value</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Filter</span><span> </span><a href="#local-6989586621679133412"><span class="hs-identifier hs-type">record</span></a><span>
+</span><a name="line-137"></a><span class="hs-special">(</span><a name="%3C%40."><a href="Database.Persist.Postgresql.JSON.html#%3C%40."><span class="hs-operator">&lt;@.</span></a></a><span class="hs-special">)</span><span> </span><a name="local-6989586621679133416"><a href="#local-6989586621679133416"><span class="hs-identifier">field</span></a></a><span> </span><a name="local-6989586621679133417"><a href="#local-6989586621679133417"><span class="hs-identifier">val</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">Filter</span><span> </span><a href="#local-6989586621679133416"><span class="hs-identifier hs-var">field</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679133417"><span class="hs-identifier hs-var">val</span></a><span class="hs-special">)</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">BackendSpecificFilter</span><span> </span><span class="hs-string">&quot; &lt;@ &quot;</span><span>
+</span><a name="line-138"></a><span>
+</span><a name="line-139"></a><span>
+</span><a name="line-140"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">PersistField</span><span> </span><span class="hs-identifier hs-type">Value</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-141"></a><span>  </span><a name="local-8214565720323800607"><span class="hs-identifier">toPersistValue</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#toPersistValueJsonB"><span class="hs-identifier hs-var">toPersistValueJsonB</span></a><span>
+</span><a name="line-142"></a><span>  </span><a name="local-8214565720323800606"><span class="hs-identifier">fromPersistValue</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueJsonB"><span class="hs-identifier hs-var">fromPersistValueJsonB</span></a><span>
+</span><a name="line-143"></a><span>
+</span><a name="line-144"></a><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier hs-type">PersistFieldSql</span><span> </span><span class="hs-identifier hs-type">Value</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-145"></a><span>  </span><a name="local-8214565720323800356"><span class="hs-identifier">sqlType</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#sqlTypeJsonB"><span class="hs-identifier hs-var">sqlTypeJsonB</span></a><span>
+</span><a name="line-146"></a><span>
+</span><a name="line-147"></a><span class="hs-comment">-- FIXME: PersistText might be a bit more efficient,</span><span>
+</span><a name="line-148"></a><span class="hs-comment">-- but needs testing/profiling before changing it.</span><span>
+</span><a name="line-149"></a><span class="hs-comment">-- (When entering into the DB the type isn't as important as fromPersistValue)</span><span>
+</span><a name="line-150"></a><span class="hs-identifier">toPersistValueJsonB</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">ToJSON</span><span> </span><a href="#local-6989586621679133411"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><a href="#local-6989586621679133411"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">PersistValue</span><span>
+</span><a name="line-151"></a><a name="toPersistValueJsonB"><a href="Database.Persist.Postgresql.JSON.html#toPersistValueJsonB"><span class="hs-identifier">toPersistValueJsonB</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">PersistDbSpecific</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">BSL.toStrict</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">encode</span><span>
+</span><a name="line-152"></a><span>
+</span><a name="line-153"></a><span class="hs-identifier">fromPersistValueJsonB</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">FromJSON</span><span> </span><a href="#local-6989586621679133410"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">PersistValue</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Either</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><a href="#local-6989586621679133410"><span class="hs-identifier hs-type">a</span></a><span>
+</span><a name="line-154"></a><a name="fromPersistValueJsonB"><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueJsonB"><span class="hs-identifier">fromPersistValueJsonB</span></a></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">PersistText</span><span> </span><a name="local-6989586621679133418"><a href="#local-6989586621679133418"><span class="hs-identifier">t</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-155"></a><span>    </span><span class="hs-keyword">case</span><span> </span><span class="hs-identifier hs-var">eitherDecodeStrict</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">TE.encodeUtf8</span><span> </span><a href="#local-6989586621679133418"><span class="hs-identifier hs-var">t</span></a><span> </span><span class="hs-keyword">of</span><span>
+</span><a name="line-156"></a><span>      </span><span class="hs-identifier hs-var">Left</span><span> </span><a name="local-6989586621679133419"><a href="#local-6989586621679133419"><span class="hs-identifier">str</span></a></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-var">Left</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueParseError"><span class="hs-identifier hs-var">fromPersistValueParseError</span></a><span> </span><span class="hs-string">&quot;FromJSON&quot;</span><span> </span><a href="#local-6989586621679133418"><span class="hs-identifier hs-var">t</span></a><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">T.pack</span><span> </span><a href="#local-6989586621679133419"><span class="hs-identifier hs-var">str</span></a><span>
+</span><a name="line-157"></a><span>      </span><span class="hs-identifier hs-var">Right</span><span> </span><a name="local-6989586621679133420"><a href="#local-6989586621679133420"><span class="hs-identifier">v</span></a></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-var">Right</span><span> </span><a href="#local-6989586621679133420"><span class="hs-identifier hs-var">v</span></a><span>
+</span><a name="line-158"></a><span class="hs-identifier">fromPersistValueJsonB</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">PersistByteString</span><span> </span><a name="local-6989586621679133421"><a href="#local-6989586621679133421"><span class="hs-identifier">bs</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-159"></a><span>    </span><span class="hs-keyword">case</span><span> </span><span class="hs-identifier hs-var">eitherDecodeStrict</span><span> </span><a href="#local-6989586621679133421"><span class="hs-identifier hs-var">bs</span></a><span> </span><span class="hs-keyword">of</span><span>
+</span><a name="line-160"></a><span>      </span><span class="hs-identifier hs-var">Left</span><span> </span><a name="local-6989586621679133422"><a href="#local-6989586621679133422"><span class="hs-identifier">str</span></a></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-var">Left</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueParseError"><span class="hs-identifier hs-var">fromPersistValueParseError</span></a><span> </span><span class="hs-string">&quot;FromJSON&quot;</span><span> </span><a href="#local-6989586621679133421"><span class="hs-identifier hs-var">bs</span></a><span> </span><span class="hs-operator hs-var">$</span><span> </span><span class="hs-identifier hs-var">T.pack</span><span> </span><a href="#local-6989586621679133422"><span class="hs-identifier hs-var">str</span></a><span>
+</span><a name="line-161"></a><span>      </span><span class="hs-identifier hs-var">Right</span><span> </span><a name="local-6989586621679133423"><a href="#local-6989586621679133423"><span class="hs-identifier">v</span></a></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-var">Right</span><span> </span><a href="#local-6989586621679133423"><span class="hs-identifier hs-var">v</span></a><span>
+</span><a name="line-162"></a><span class="hs-identifier">fromPersistValueJsonB</span><span> </span><a name="local-6989586621679133424"><a href="#local-6989586621679133424"><span class="hs-identifier">x</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">Left</span><span> </span><span class="hs-operator hs-var">$</span><span> </span><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueError"><span class="hs-identifier hs-var">fromPersistValueError</span></a><span> </span><span class="hs-string">&quot;FromJSON&quot;</span><span> </span><span class="hs-string">&quot;string or bytea&quot;</span><span> </span><a href="#local-6989586621679133424"><span class="hs-identifier hs-var">x</span></a><span>
+</span><a name="line-163"></a><span>
+</span><a name="line-164"></a><span class="hs-comment">-- Constraints on the type are not necessary.</span><span>
+</span><a name="line-165"></a><span class="hs-identifier">sqlTypeJsonB</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">ToJSON</span><span> </span><a href="#local-6989586621679133409"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">FromJSON</span><span> </span><a href="#local-6989586621679133409"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">Proxy</span><span> </span><a href="#local-6989586621679133409"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">SqlType</span><span>
+</span><a name="line-166"></a><a name="sqlTypeJsonB"><a href="Database.Persist.Postgresql.JSON.html#sqlTypeJsonB"><span class="hs-identifier">sqlTypeJsonB</span></a></a><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">SqlOther</span><span> </span><span class="hs-string">&quot;JSONB&quot;</span><span>
+</span><a name="line-167"></a><span>
+</span><a name="line-168"></a><span>
+</span><a name="line-169"></a><span class="hs-identifier">fromPersistValueError</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-comment">-- ^ Haskell type, should match Haskell name exactly, e.g. &quot;Int64&quot;</span><span>
+</span><a name="line-170"></a><span>                      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-comment">-- ^ Database type(s), should appear different from Haskell name, e.g. &quot;integer&quot; or &quot;INT&quot;, not &quot;Int&quot;.</span><span>
+</span><a name="line-171"></a><span>                      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">PersistValue</span><span> </span><span class="hs-comment">-- ^ Incorrect value</span><span>
+</span><a name="line-172"></a><span>                      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-comment">-- ^ Error message</span><span>
+</span><a name="line-173"></a><a name="fromPersistValueError"><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueError"><span class="hs-identifier">fromPersistValueError</span></a></a><span> </span><a name="local-6989586621679133425"><a href="#local-6989586621679133425"><span class="hs-identifier">haskellType</span></a></a><span> </span><a name="local-6989586621679133426"><a href="#local-6989586621679133426"><span class="hs-identifier">databaseType</span></a></a><span> </span><a name="local-6989586621679133427"><a href="#local-6989586621679133427"><span class="hs-identifier">received</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">T.concat</span><span>
+</span><a name="line-174"></a><span>    </span><span class="hs-special">[</span><span> </span><span class="hs-string">&quot;Failed to parse Haskell type `&quot;</span><span>
+</span><a name="line-175"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="#local-6989586621679133425"><span class="hs-identifier hs-var">haskellType</span></a><span>
+</span><a name="line-176"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;`; expected &quot;</span><span>
+</span><a name="line-177"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="#local-6989586621679133426"><span class="hs-identifier hs-var">databaseType</span></a><span>
+</span><a name="line-178"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot; from database, but received: &quot;</span><span>
+</span><a name="line-179"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">T.pack</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">show</span><span> </span><a href="#local-6989586621679133427"><span class="hs-identifier hs-var">received</span></a><span class="hs-special">)</span><span>
+</span><a name="line-180"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;. Potential solution: Check that your database schema matches your Persistent model definitions.&quot;</span><span>
+</span><a name="line-181"></a><span>    </span><span class="hs-special">]</span><span>
+</span><a name="line-182"></a><span>
+</span><a name="line-183"></a><span class="hs-identifier">fromPersistValueParseError</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Show</span><span> </span><a href="#local-6989586621679133408"><span class="hs-identifier hs-type">a</span></a><span class="hs-special">)</span><span>
+</span><a name="line-184"></a><span>                           </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-comment">-- ^ Haskell type, should match Haskell name exactly, e.g. &quot;Int64&quot;</span><span>
+</span><a name="line-185"></a><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><a href="#local-6989586621679133408"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-comment">-- ^ Received value</span><span>
+</span><a name="line-186"></a><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-comment">-- ^ Additional error</span><span>
+</span><a name="line-187"></a><span>                           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-comment">-- ^ Error message</span><span>
+</span><a name="line-188"></a><a name="fromPersistValueParseError"><a href="Database.Persist.Postgresql.JSON.html#fromPersistValueParseError"><span class="hs-identifier">fromPersistValueParseError</span></a></a><span> </span><a name="local-6989586621679133428"><a href="#local-6989586621679133428"><span class="hs-identifier">haskellType</span></a></a><span> </span><a name="local-6989586621679133429"><a href="#local-6989586621679133429"><span class="hs-identifier">received</span></a></a><span> </span><a name="local-6989586621679133430"><a href="#local-6989586621679133430"><span class="hs-identifier">err</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">T.concat</span><span>
+</span><a name="line-189"></a><span>    </span><span class="hs-special">[</span><span> </span><span class="hs-string">&quot;Failed to parse Haskell type `&quot;</span><span>
+</span><a name="line-190"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="#local-6989586621679133428"><span class="hs-identifier hs-var">haskellType</span></a><span>
+</span><a name="line-191"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;`, but received &quot;</span><span>
+</span><a name="line-192"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">T.pack</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">show</span><span> </span><a href="#local-6989586621679133429"><span class="hs-identifier hs-var">received</span></a><span class="hs-special">)</span><span>
+</span><a name="line-193"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot; | with error: &quot;</span><span>
+</span><a name="line-194"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="#local-6989586621679133430"><span class="hs-identifier hs-var">err</span></a><span>
+</span><a name="line-195"></a><span>    </span><span class="hs-special">]</span><span>
+</span><a name="line-196"></a></pre></body></html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP #-}</span><span>
+</span><a name="line-2"></a><span class="hs-comment">-- |</span><span>
+</span><a name="line-3"></a><span class="hs-comment">-- Module    : Numeric.SpecFunctions</span><span>
+</span><a name="line-4"></a><span class="hs-comment">-- Copyright : (c) 2009, 2011, 2012 Bryan O'Sullivan</span><span>
+</span><a name="line-5"></a><span class="hs-comment">-- License   : BSD3</span><span>
+</span><a name="line-6"></a><span class="hs-comment">--</span><span>
+</span><a name="line-7"></a><span class="hs-comment">-- Maintainer  : bos@serpentine.com</span><span>
+</span><a name="line-8"></a><span class="hs-comment">-- Stability   : experimental</span><span>
+</span><a name="line-9"></a><span class="hs-comment">-- Portability : portable</span><span>
+</span><a name="line-10"></a><span class="hs-comment">--</span><span>
+</span><a name="line-11"></a><span class="hs-comment">-- Special functions and factorials.</span><span>
+</span><a name="line-12"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Numeric.SpecFunctions</span><span> </span><span class="hs-special">(</span><span>
+</span><a name="line-13"></a><span>    </span><span class="hs-comment">-- * Error function</span><span>
+</span><a name="line-14"></a><span>    </span><a href="Numeric.SpecFunctions.Internal.html#erf"><span class="hs-identifier hs-var">erf</span></a><span>
+</span><a name="line-15"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#erfc"><span class="hs-identifier hs-var">erfc</span></a><span>
+</span><a name="line-16"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#invErf"><span class="hs-identifier hs-var">invErf</span></a><span>
+</span><a name="line-17"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#invErfc"><span class="hs-identifier hs-var">invErfc</span></a><span>
+</span><a name="line-18"></a><span>    </span><span class="hs-comment">-- * Gamma function</span><span>
+</span><a name="line-19"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#logGamma"><span class="hs-identifier hs-var">logGamma</span></a><span>
+</span><a name="line-20"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#logGammaL"><span class="hs-identifier hs-var">logGammaL</span></a><span>
+</span><a name="line-21"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#incompleteGamma"><span class="hs-identifier hs-var">incompleteGamma</span></a><span>
+</span><a name="line-22"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#invIncompleteGamma"><span class="hs-identifier hs-var">invIncompleteGamma</span></a><span>
+</span><a name="line-23"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#digamma"><span class="hs-identifier hs-var">digamma</span></a><span>
+</span><a name="line-24"></a><span>    </span><span class="hs-comment">-- * Beta function</span><span>
+</span><a name="line-25"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#logBeta"><span class="hs-identifier hs-var">logBeta</span></a><span>
+</span><a name="line-26"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#incompleteBeta"><span class="hs-identifier hs-var">incompleteBeta</span></a><span>
+</span><a name="line-27"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#incompleteBeta_"><span class="hs-identifier hs-var">incompleteBeta_</span></a><span>
+</span><a name="line-28"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#invIncompleteBeta"><span class="hs-identifier hs-var">invIncompleteBeta</span></a><span>
+</span><a name="line-29"></a><span>    </span><span class="hs-comment">-- * Sinc</span><span>
+</span><a name="line-30"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#sinc"><span class="hs-identifier hs-var">sinc</span></a><span>
+</span><a name="line-31"></a><span>    </span><span class="hs-comment">-- * Logarithm</span><span>
+</span><a name="line-32"></a><span>    </span><span class="hs-comment">-- $log1p</span><span>
+</span><a name="line-33"></a><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">log1p</span><span>
+</span><a name="line-34"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#log1pmx"><span class="hs-identifier hs-var">log1pmx</span></a><span>
+</span><a name="line-35"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#log2"><span class="hs-identifier hs-var">log2</span></a><span>
+</span><a name="line-36"></a><span>    </span><span class="hs-comment">-- * Exponent</span><span>
+</span><a name="line-37"></a><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-var">expm1</span><span>
+</span><a name="line-38"></a><span>    </span><span class="hs-comment">-- * Factorial</span><span>
+</span><a name="line-39"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#factorial"><span class="hs-identifier hs-var">factorial</span></a><span>
+</span><a name="line-40"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#logFactorial"><span class="hs-identifier hs-var">logFactorial</span></a><span>
+</span><a name="line-41"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#stirlingError"><span class="hs-identifier hs-var">stirlingError</span></a><span>
+</span><a name="line-42"></a><span>    </span><span class="hs-comment">-- * Combinatorics</span><span>
+</span><a name="line-43"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#choose"><span class="hs-identifier hs-var">choose</span></a><span>
+</span><a name="line-44"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Numeric.SpecFunctions.Internal.html#logChoose"><span class="hs-identifier hs-var">logChoose</span></a><span>
+</span><a name="line-45"></a><span>    </span><span class="hs-comment">-- * References</span><span>
+</span><a name="line-46"></a><span>    </span><span class="hs-comment">-- $references</span><span>
+</span><a name="line-47"></a><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-48"></a><span>
+</span><a name="line-49"></a><span class="hs-keyword">import</span><span> </span><a href="Numeric.SpecFunctions.Internal.html"><span class="hs-identifier">Numeric.SpecFunctions.Internal</span></a><span>
+</span><a name="line-50"></a><span>
+</span><a name="line-51"></a><span class="hs-comment">-- $log1p</span><span>
+</span><a name="line-52"></a><span class="hs-comment">--</span><span>
+</span><a name="line-53"></a><span class="hs-comment">-- Base starting from @4.9.0@ (GHC 8.0) provides 'log1p' and 'expm1'</span><span>
+</span><a name="line-54"></a><span class="hs-comment">-- as method of class 'Floating'. In this case we simply reexport</span><span>
+</span><a name="line-55"></a><span class="hs-comment">-- these function. Otherwise we provide our own with more restrictive</span><span>
+</span><a name="line-56"></a><span class="hs-comment">-- signature @Double &#8594; Double@.</span><span>
+</span><a name="line-57"></a><span>
+</span><a name="line-58"></a><span class="hs-comment">-- $references</span><span>
+</span><a name="line-59"></a><span class="hs-comment">--</span><span>
+</span><a name="line-60"></a><span class="hs-comment">-- * Bernardo, J. (1976) Algorithm AS 103: Psi (digamma)</span><span>
+</span><a name="line-61"></a><span class="hs-comment">--   function. /Journal of the Royal Statistical Society. Series C</span><span>
+</span><a name="line-62"></a><span class="hs-comment">--   (Applied Statistics)/ 25(3):315-317.</span><span>
+</span><a name="line-63"></a><span class="hs-comment">--   &lt;http://www.jstor.org/stable/2347257&gt;</span><span>
+</span><a name="line-64"></a><span class="hs-comment">--</span><span>
+</span><a name="line-65"></a><span class="hs-comment">-- * Cran, G.W., Martin, K.J., Thomas, G.E. (1977) Remark AS R19</span><span>
+</span><a name="line-66"></a><span class="hs-comment">--   and Algorithm AS 109: A Remark on Algorithms: AS 63: The</span><span>
+</span><a name="line-67"></a><span class="hs-comment">--   Incomplete Beta Integral AS 64: Inverse of the Incomplete Beta</span><span>
+</span><a name="line-68"></a><span class="hs-comment">--   Function Ratio. /Journal of the Royal Statistical Society. Series</span><span>
+</span><a name="line-69"></a><span class="hs-comment">--   C (Applied Statistics)/ Vol. 26, No. 1 (1977), pp. 111-114</span><span>
+</span><a name="line-70"></a><span class="hs-comment">--   &lt;http://www.jstor.org/pss/2346887&gt;</span><span>
+</span><a name="line-71"></a><span class="hs-comment">--</span><span>
+</span><a name="line-72"></a><span class="hs-comment">-- * Lanczos, C. (1964) A precision approximation of the gamma</span><span>
+</span><a name="line-73"></a><span class="hs-comment">--   function.  /SIAM Journal on Numerical Analysis B/</span><span>
+</span><a name="line-74"></a><span class="hs-comment">--   1:86&amp;#8211;96. &lt;http://www.jstor.org/stable/2949767&gt;</span><span>
+</span><a name="line-75"></a><span class="hs-comment">--</span><span>
+</span><a name="line-76"></a><span class="hs-comment">-- * Loader, C. (2000) Fast and Accurate Computation of Binomial</span><span>
+</span><a name="line-77"></a><span class="hs-comment">--   Probabilities. &lt;http://projects.scipy.org/scipy/raw-attachment/ticket/620/loader2000Fast.pdf&gt;</span><span>
+</span><a name="line-78"></a><span class="hs-comment">--</span><span>
+</span><a name="line-79"></a><span class="hs-comment">-- * Macleod, A.J. (1989) Algorithm AS 245: A robust and reliable</span><span>
+</span><a name="line-80"></a><span class="hs-comment">--   algorithm for the logarithm of the gamma function.</span><span>
+</span><a name="line-81"></a><span class="hs-comment">--   /Journal of the Royal Statistical Society, Series C (Applied Statistics)/</span><span>
+</span><a name="line-82"></a><span class="hs-comment">--   38(2):397&amp;#8211;402. &lt;http://www.jstor.org/stable/2348078&gt;</span><span>
+</span><a name="line-83"></a><span class="hs-comment">--</span><span>
+</span><a name="line-84"></a><span class="hs-comment">-- * Majumder, K.L., Bhattacharjee, G.P. (1973) Algorithm AS 63: The</span><span>
+</span><a name="line-85"></a><span class="hs-comment">--   Incomplete Beta Integral. /Journal of the Royal Statistical</span><span>
+</span><a name="line-86"></a><span class="hs-comment">--   Society. Series C (Applied Statistics)/ Vol. 22, No. 3 (1973),</span><span>
+</span><a name="line-87"></a><span class="hs-comment">--   pp. 409-411. &lt;http://www.jstor.org/pss/2346797&gt;</span><span>
+</span><a name="line-88"></a><span class="hs-comment">--</span><span>
+</span><a name="line-89"></a><span class="hs-comment">-- * Majumder, K.L., Bhattacharjee, G.P. (1973) Algorithm AS 64:</span><span>
+</span><a name="line-90"></a><span class="hs-comment">--   Inverse of the Incomplete Beta Function Ratio. /Journal of the</span><span>
+</span><a name="line-91"></a><span class="hs-comment">--   Royal Statistical Society. Series C (Applied Statistics)/</span><span>
+</span><a name="line-92"></a><span class="hs-comment">--   Vol. 22, No. 3 (1973), pp. 411-414</span><span>
+</span><a name="line-93"></a><span class="hs-comment">--   &lt;http://www.jstor.org/pss/2346798&gt;</span><span>
+</span><a name="line-94"></a><span class="hs-comment">--</span><span>
+</span><a name="line-95"></a><span class="hs-comment">-- * Temme, N.M. (1992) Asymptotic inversion of the incomplete beta</span><span>
+</span><a name="line-96"></a><span class="hs-comment">--   function. /Journal of Computational and Applied Mathematics</span><span>
+</span><a name="line-97"></a><span class="hs-comment">--   41(1992) 145-157.</span><span>
+</span><a name="line-98"></a><span class="hs-comment">--</span><span>
+</span><a name="line-99"></a><span class="hs-comment">-- * Temme, N.M. (1994) A set of algorithms for the incomplete gamma</span><span>
+</span><a name="line-100"></a><span class="hs-comment">--   functions. /Probability in the Engineering and Informational</span><span>
+</span><a name="line-101"></a><span class="hs-comment">--   Sciences/, 8, 1994, 291-307. Printed in the U.S.A.</span><span>
+</span><a name="line-102"></a><span>
+</span><a name="line-103"></a></pre></body></html>

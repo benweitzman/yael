@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE TypeFamilies         #-}</span><span>
+</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE UndecidableInstances #-}</span><span>
+</span><a name="line-3"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Barbie.Internal.Wear</span><span>
+</span><a name="line-4"></a><span>  </span><span class="hs-special">(</span><span> </span><a href="Data.Barbie.Internal.Wear.html#Wear"><span class="hs-identifier hs-type">Wear</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Wear.html#Bare"><span class="hs-identifier hs-type">Bare</span></a><span class="hs-special">,</span><span> </span><a href="Data.Barbie.Internal.Wear.html#Covered"><span class="hs-identifier hs-type">Covered</span></a><span>
+</span><a name="line-5"></a><span>  </span><span class="hs-special">)</span><span>
+</span><a name="line-6"></a><span>
+</span><a name="line-7"></a><span class="hs-keyword">where</span><span>
+</span><a name="line-8"></a><span>
+</span><a name="line-9"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">GHC.TypeLits</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">ErrorMessage</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">TypeError</span><span class="hs-special">)</span><span>
+</span><a name="line-10"></a><span>
+</span><a name="line-11"></a><span class="hs-keyword">data</span><span> </span><a name="Bare"><a href="Data.Barbie.Internal.Wear.html#Bare"><span class="hs-identifier">Bare</span></a></a><span>
+</span><a name="line-12"></a><span class="hs-keyword">data</span><span> </span><a name="Covered"><a href="Data.Barbie.Internal.Wear.html#Covered"><span class="hs-identifier">Covered</span></a></a><span>
+</span><a name="line-13"></a><span>
+</span><a name="line-14"></a><span class="hs-comment">-- | The 'Wear' type-function allows one to define a Barbie-type as</span><span>
+</span><a name="line-15"></a><span class="hs-comment">--</span><span>
+</span><a name="line-16"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-17"></a><span class="hs-comment">-- data B t f</span><span>
+</span><a name="line-18"></a><span class="hs-comment">--   = B { f1 :: 'Wear' t f 'Int'</span><span>
+</span><a name="line-19"></a><span class="hs-comment">--       , f2 :: 'Wear' t f 'Bool'</span><span>
+</span><a name="line-20"></a><span class="hs-comment">--       }</span><span>
+</span><a name="line-21"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-22"></a><span class="hs-comment">--</span><span>
+</span><a name="line-23"></a><span class="hs-comment">-- This gives rise to two rather different types:</span><span>
+</span><a name="line-24"></a><span class="hs-comment">--</span><span>
+</span><a name="line-25"></a><span class="hs-comment">--   * @B 'Covered' f@ is a normal Barbie-type, in the sense that</span><span>
+</span><a name="line-26"></a><span class="hs-comment">--     @f1 :: B 'Covered' f -&gt; f 'Int'@, etc.</span><span>
+</span><a name="line-27"></a><span class="hs-comment">--</span><span>
+</span><a name="line-28"></a><span class="hs-comment">--   * @B 'Bare' f@, on the other hand, is a normal record with</span><span>
+</span><a name="line-29"></a><span class="hs-comment">--     no functor around the type:</span><span>
+</span><a name="line-30"></a><span class="hs-comment">--</span><span>
+</span><a name="line-31"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-32"></a><span class="hs-comment">-- B { f1 :: 5, f2 = 'True' } :: B 'Bare' f</span><span>
+</span><a name="line-33"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-34"></a><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">family</span><span> </span><a name="Wear"><a href="Data.Barbie.Internal.Wear.html#Wear"><span class="hs-identifier">Wear</span></a></a><span> </span><a name="local-6989586621679030066"><a href="#local-6989586621679030066"><span class="hs-identifier">t</span></a></a><span> </span><a name="local-6989586621679030067"><a href="#local-6989586621679030067"><span class="hs-identifier">f</span></a></a><span> </span><a name="local-6989586621679030068"><a href="#local-6989586621679030068"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-35"></a><span>  </span><span class="hs-identifier">Wear</span><span> </span><a href="Data.Barbie.Internal.Wear.html#Bare"><span class="hs-identifier hs-type">Bare</span></a><span>    </span><a href="#local-6989586621679030069"><span class="hs-identifier hs-type">f</span></a><span> </span><a href="#local-6989586621679030070"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679030070"><span class="hs-identifier hs-type">a</span></a><span>
+</span><a name="line-36"></a><span>  </span><span class="hs-identifier">Wear</span><span> </span><a href="Data.Barbie.Internal.Wear.html#Covered"><span class="hs-identifier hs-type">Covered</span></a><span> </span><a href="#local-6989586621679030071"><span class="hs-identifier hs-type">f</span></a><span> </span><a href="#local-6989586621679030072"><span class="hs-identifier hs-type">a</span></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="#local-6989586621679030071"><span class="hs-identifier hs-type">f</span></a><span> </span><a href="#local-6989586621679030072"><span class="hs-identifier hs-type">a</span></a><span>
+</span><a name="line-37"></a><span>  </span><span class="hs-identifier">Wear</span><span> </span><a href="#local-6989586621679030073"><span class="hs-identifier hs-type">t</span></a><span>       </span><span class="hs-identifier">_</span><span> </span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-type">TypeError</span><span> </span><span class="hs-special">(</span><span>     </span><span class="hs-special">'</span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-string">&quot;`Wear` should only be used with &quot;</span><span>
+</span><a name="line-38"></a><span>                               </span><span class="hs-special">'</span><span class="hs-operator hs-type">:&lt;&gt;:</span><span> </span><span class="hs-special">'</span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-string">&quot;`Bare` or `Covered`.&quot;</span><span>
+</span><a name="line-39"></a><span>                               </span><span class="hs-special">'</span><span class="hs-operator">:$$:</span><span> </span><span class="hs-special">'</span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-string">&quot;`&quot;</span><span> </span><span class="hs-special">'</span><span class="hs-operator hs-type">:&lt;&gt;:</span><span> </span><span class="hs-special">'</span><span class="hs-identifier hs-type">ShowType</span><span> </span><a href="#local-6989586621679030073"><span class="hs-identifier hs-type">t</span></a><span> </span><span class="hs-special">'</span><span class="hs-operator">:&lt;&gt;:</span><span> </span><span class="hs-special">'</span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-string">&quot;`&quot;</span><span>
+</span><a name="line-40"></a><span>                               </span><span class="hs-special">'</span><span class="hs-operator">:&lt;&gt;:</span><span> </span><span class="hs-special">'</span><span class="hs-identifier hs-type">Text</span><span> </span><span class="hs-string">&quot; is not allowed in this context.&quot;</span><span>
+</span><a name="line-41"></a><span>                               </span><span class="hs-special">)</span><span>
+</span><a name="line-42"></a></pre></body></html>

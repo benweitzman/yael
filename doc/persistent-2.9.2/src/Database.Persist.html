@@ -1,0 +1,411 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP #-}</span><span>
+</span><a name="line-2"></a><span class="hs-pragma">{-# LANGUAGE ExistentialQuantification #-}</span><span>
+</span><a name="line-3"></a><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><a name="line-4"></a><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><a name="line-5"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Database.Persist</span><span>
+</span><a name="line-6"></a><span>    </span><span class="hs-special">(</span><span> </span><span class="hs-keyword">module</span><span> </span><a href="Database.Persist.Class.html"><span class="hs-identifier">Database.Persist.Class</span></a><span>
+</span><a name="line-7"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><a href="Database.Persist.Types.html"><span class="hs-identifier">Database.Persist.Types</span></a><span>
+</span><a name="line-8"></a><span>
+</span><a name="line-9"></a><span>    </span><span class="hs-comment">-- * Reference Schema &amp; Dataset</span><span>
+</span><a name="line-10"></a><span>    </span><span class="hs-comment">-- |</span><span>
+</span><a name="line-11"></a><span>    </span><span class="hs-comment">--</span><span>
+</span><a name="line-12"></a><span>    </span><span class="hs-comment">-- All the combinators present here will be explained based on this schema:</span><span>
+</span><a name="line-13"></a><span>    </span><span class="hs-comment">--</span><span>
+</span><a name="line-14"></a><span>    </span><span class="hs-comment">-- &gt; share [mkPersist sqlSettings, mkMigrate &quot;migrateAll&quot;] [persistLowerCase|</span><span>
+</span><a name="line-15"></a><span>    </span><span class="hs-comment">-- &gt; User</span><span>
+</span><a name="line-16"></a><span>    </span><span class="hs-comment">-- &gt;     name String</span><span>
+</span><a name="line-17"></a><span>    </span><span class="hs-comment">-- &gt;     age Int</span><span>
+</span><a name="line-18"></a><span>    </span><span class="hs-comment">-- &gt;     deriving Show</span><span>
+</span><a name="line-19"></a><span>    </span><span class="hs-comment">-- &gt; |]</span><span>
+</span><a name="line-20"></a><span>    </span><span class="hs-comment">--</span><span>
+</span><a name="line-21"></a><span>    </span><span class="hs-comment">-- and this dataset. The examples below will refer to this as dataset-1.</span><span>
+</span><a name="line-22"></a><span>    </span><span class="hs-comment">--</span><span>
+</span><a name="line-23"></a><span>    </span><span class="hs-comment">-- #dataset#</span><span>
+</span><a name="line-24"></a><span>    </span><span class="hs-comment">--</span><span>
+</span><a name="line-25"></a><span>    </span><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-26"></a><span>    </span><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-27"></a><span>    </span><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-28"></a><span>    </span><span class="hs-comment">-- &gt; |1    |SPJ  |40   |</span><span>
+</span><a name="line-29"></a><span>    </span><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-30"></a><span>    </span><span class="hs-comment">-- &gt; |2    |Simon|41   |</span><span>
+</span><a name="line-31"></a><span>    </span><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-32"></a><span>
+</span><a name="line-33"></a><span>    </span><span class="hs-comment">-- * Query update combinators</span><span>
+</span><a name="line-34"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3D."><span class="hs-operator hs-var">=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%2B%3D."><span class="hs-operator hs-var">+=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#-%3D."><span class="hs-operator hs-var">-=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%2A%3D."><span class="hs-operator hs-var">*=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%2F%3D."><span class="hs-operator hs-var">/=.</span></a><span class="hs-special">)</span><span>
+</span><a name="line-35"></a><span>
+</span><a name="line-36"></a><span>      </span><span class="hs-comment">-- * Query filter combinators</span><span>
+</span><a name="line-37"></a><span>    </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3D%3D."><span class="hs-operator hs-var">==.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%21%3D."><span class="hs-operator hs-var">!=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3C."><span class="hs-operator hs-var">&lt;.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3E."><span class="hs-operator hs-var">&gt;.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3C%3D."><span class="hs-operator hs-var">&lt;=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3E%3D."><span class="hs-operator hs-var">&gt;=.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%3C-."><span class="hs-operator hs-var">&lt;-.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%2F%3C-."><span class="hs-operator hs-var">/&lt;-.</span></a><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.html#%7C%7C."><span class="hs-operator hs-var">||.</span></a><span class="hs-special">)</span><span>
+</span><a name="line-38"></a><span>
+</span><a name="line-39"></a><span>      </span><span class="hs-comment">-- * JSON Utilities</span><span>
+</span><a name="line-40"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#listToJSON"><span class="hs-identifier hs-var">listToJSON</span></a><span>
+</span><a name="line-41"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#mapToJSON"><span class="hs-identifier hs-var">mapToJSON</span></a><span>
+</span><a name="line-42"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#toJsonText"><span class="hs-identifier hs-var">toJsonText</span></a><span>
+</span><a name="line-43"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Database.Persist.Class.PersistField.html#getPersistMap"><span class="hs-identifier hs-var">getPersistMap</span></a><span>
+</span><a name="line-44"></a><span>
+</span><a name="line-45"></a><span>      </span><span class="hs-comment">-- * Other utilities</span><span>
+</span><a name="line-46"></a><span>    </span><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#limitOffsetOrder"><span class="hs-identifier hs-var">limitOffsetOrder</span></a><span>
+</span><a name="line-47"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-48"></a><span>
+</span><a name="line-49"></a><span class="hs-keyword">import</span><span> </span><a href="Database.Persist.Types.html"><span class="hs-identifier">Database.Persist.Types</span></a><span>
+</span><a name="line-50"></a><span class="hs-keyword">import</span><span> </span><a href="Database.Persist.Class.html"><span class="hs-identifier">Database.Persist.Class</span></a><span>
+</span><a name="line-51"></a><span class="hs-keyword">import</span><span> </span><a href="Database.Persist.Class.PersistField.html"><span class="hs-identifier">Database.Persist.Class.PersistField</span></a><span> </span><span class="hs-special">(</span><a href="Database.Persist.Class.PersistField.html#getPersistMap"><span class="hs-identifier hs-var">getPersistMap</span></a><span class="hs-special">)</span><span>
+</span><a name="line-52"></a><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-identifier">Data.Text</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">T</span><span>
+</span><a name="line-53"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Text.Lazy</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">toStrict</span><span class="hs-special">)</span><span>
+</span><a name="line-54"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Text.Lazy.Builder</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">toLazyText</span><span class="hs-special">)</span><span>
+</span><a name="line-55"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Aeson</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">toJSON</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">ToJSON</span><span class="hs-special">)</span><span>
+</span><a name="line-56"></a><span class="hs-cpp">#if MIN_VERSION_aeson(1, 0, 0)
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Aeson.Text</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">encodeToTextBuilder</span><span class="hs-special">)</span><span>
+</span><a name="line-58"></a><span class="hs-cpp">#elif MIN_VERSION_aeson(0, 7, 0)
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Aeson.Encode</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">encodeToTextBuilder</span><span class="hs-special">)</span><span>
+</span><a name="line-60"></a><span class="hs-cpp">#else
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Aeson.Encode</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">fromValue</span><span class="hs-special">)</span><span>
+</span><a name="line-62"></a><span class="hs-cpp">#endif
+</span><span>
+</span><a name="line-64"></a><span class="hs-keyword">infixr</span><span> </span><span class="hs-number">3</span><span> </span><a href="Database.Persist.html#%3D."><span class="hs-operator hs-var">=.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%2B%3D."><span class="hs-operator hs-var">+=.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#-%3D."><span class="hs-operator hs-var">-=.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%2A%3D."><span class="hs-operator hs-var">*=.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%2F%3D."><span class="hs-operator hs-var">/=.</span></a><span>
+</span><a name="line-65"></a><span class="hs-special">(</span><span class="hs-operator">=.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">+=.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">-=.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">*=.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">/=.</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span>
+</span><a name="line-66"></a><span>  </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679148234"><a href="#local-6989586621679148234"><span class="hs-identifier">v</span></a></a><span> </span><a name="local-6989586621679148235"><a href="#local-6989586621679148235"><span class="hs-identifier">typ</span></a></a><span class="hs-operator">.</span><span>  </span><a href="Database.Persist.Class.PersistField.html#PersistField"><span class="hs-identifier hs-type">PersistField</span></a><span> </span><a href="#local-6989586621679148235"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#EntityField"><span class="hs-identifier hs-type">EntityField</span></a><span> </span><a href="#local-6989586621679148234"><span class="hs-identifier hs-type">v</span></a><span> </span><a href="#local-6989586621679148235"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="#local-6989586621679148235"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Update"><span class="hs-identifier hs-type">Update</span></a><span> </span><a href="#local-6989586621679148234"><span class="hs-identifier hs-type">v</span></a><span>
+</span><a name="line-67"></a><span>
+</span><a name="line-68"></a><span class="hs-comment">-- | Assign a field a value.</span><span>
+</span><a name="line-69"></a><span class="hs-comment">--</span><span>
+</span><a name="line-70"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-71"></a><span class="hs-comment">--</span><span>
+</span><a name="line-72"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-73"></a><span class="hs-comment">-- updateAge :: MonadIO m =&gt; ReaderT SqlBackend m ()</span><span>
+</span><a name="line-74"></a><span class="hs-comment">-- updateAge = updateWhere [UserName ==. \&quot;SPJ\&quot; ] [UserAge =. 45]</span><span>
+</span><a name="line-75"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-76"></a><span class="hs-comment">--</span><span>
+</span><a name="line-77"></a><span class="hs-comment">-- Similar to `updateWhere` which is shown in the above example you can use other functions present in the module &quot;Database.Persist.Class&quot;. Note that the first parameter of `updateWhere` is [`Filter` val] and second parameter is [`Update` val]. By comparing this with the type of `==.` and `=.`, you can see that they match up in the above usage.</span><span>
+</span><a name="line-78"></a><span class="hs-comment">--</span><span>
+</span><a name="line-79"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-80"></a><span class="hs-comment">-- </span><span>
+</span><a name="line-81"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-82"></a><span class="hs-comment">-- &gt; |id   |name |age     |</span><span>
+</span><a name="line-83"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-84"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40 -&gt; 45|</span><span>
+</span><a name="line-85"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-86"></a><span class="hs-comment">-- &gt; |2    |Simon|41      |</span><span>
+</span><a name="line-87"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-88"></a><span>
+</span><a name="line-89"></a><a name="local-6989586621679148236"><a href="#local-6989586621679148236"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3D."><a href="Database.Persist.html#%3D."><span class="hs-operator">=.</span></a></a><span> </span><a name="local-6989586621679148237"><a href="#local-6989586621679148237"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Update"><span class="hs-identifier hs-var">Update</span></a><span> </span><a href="#local-6989586621679148236"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679148237"><span class="hs-identifier hs-var">a</span></a><span> </span><a href="Database.Persist.Types.Base.html#Assign"><span class="hs-identifier hs-var">Assign</span></a><span>
+</span><a name="line-90"></a><span>
+</span><a name="line-91"></a><span class="hs-comment">-- | Assign a field by addition (@+=@).</span><span>
+</span><a name="line-92"></a><span class="hs-comment">--</span><span>
+</span><a name="line-93"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-94"></a><span class="hs-comment">--</span><span>
+</span><a name="line-95"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-96"></a><span class="hs-comment">-- addAge :: MonadIO m =&gt; ReaderT SqlBackend m ()</span><span>
+</span><a name="line-97"></a><span class="hs-comment">-- addAge = updateWhere [UserName ==. \&quot;SPJ\&quot; ] [UserAge +=. 1]</span><span>
+</span><a name="line-98"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-99"></a><span class="hs-comment">--</span><span>
+</span><a name="line-100"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-101"></a><span class="hs-comment">--</span><span>
+</span><a name="line-102"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-103"></a><span class="hs-comment">-- &gt; |id   |name |age      |</span><span>
+</span><a name="line-104"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-105"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40 -&gt; 41 |</span><span>
+</span><a name="line-106"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-107"></a><span class="hs-comment">-- &gt; |2    |Simon|41       |</span><span>
+</span><a name="line-108"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-109"></a><span>
+</span><a name="line-110"></a><span>
+</span><a name="line-111"></a><a name="local-6989586621679148238"><a href="#local-6989586621679148238"><span class="hs-identifier">f</span></a></a><span> </span><a name="%2B%3D."><a href="Database.Persist.html#%2B%3D."><span class="hs-operator">+=.</span></a></a><span> </span><a name="local-6989586621679148239"><a href="#local-6989586621679148239"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Update"><span class="hs-identifier hs-var">Update</span></a><span> </span><a href="#local-6989586621679148238"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679148239"><span class="hs-identifier hs-var">a</span></a><span> </span><a href="Database.Persist.Types.Base.html#Add"><span class="hs-identifier hs-var">Add</span></a><span>
+</span><a name="line-112"></a><span>
+</span><a name="line-113"></a><span class="hs-comment">-- | Assign a field by subtraction (@-=@).</span><span>
+</span><a name="line-114"></a><span class="hs-comment">--</span><span>
+</span><a name="line-115"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-116"></a><span class="hs-comment">--</span><span>
+</span><a name="line-117"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-118"></a><span class="hs-comment">-- subtractAge :: MonadIO m =&gt; ReaderT SqlBackend m ()</span><span>
+</span><a name="line-119"></a><span class="hs-comment">-- subtractAge = updateWhere [UserName ==. \&quot;SPJ\&quot; ] [UserAge -=. 1]</span><span>
+</span><a name="line-120"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-121"></a><span class="hs-comment">--</span><span>
+</span><a name="line-122"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-123"></a><span class="hs-comment">--</span><span>
+</span><a name="line-124"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-125"></a><span class="hs-comment">-- &gt; |id   |name |age      |</span><span>
+</span><a name="line-126"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-127"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40 -&gt; 39 |</span><span>
+</span><a name="line-128"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-129"></a><span class="hs-comment">-- &gt; |2    |Simon|41       |</span><span>
+</span><a name="line-130"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-131"></a><span>
+</span><a name="line-132"></a><a name="local-6989586621679148240"><a href="#local-6989586621679148240"><span class="hs-identifier">f</span></a></a><span> </span><a name="-%3D."><a href="Database.Persist.html#-%3D."><span class="hs-operator">-=.</span></a></a><span> </span><a name="local-6989586621679148241"><a href="#local-6989586621679148241"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Update"><span class="hs-identifier hs-var">Update</span></a><span> </span><a href="#local-6989586621679148240"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679148241"><span class="hs-identifier hs-var">a</span></a><span> </span><a href="Database.Persist.Types.Base.html#Subtract"><span class="hs-identifier hs-var">Subtract</span></a><span>
+</span><a name="line-133"></a><span>
+</span><a name="line-134"></a><span class="hs-comment">-- | Assign a field by multiplication (@*=@).</span><span>
+</span><a name="line-135"></a><span class="hs-comment">--</span><span>
+</span><a name="line-136"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-137"></a><span class="hs-comment">--</span><span>
+</span><a name="line-138"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-139"></a><span class="hs-comment">-- multiplyAge :: MonadIO m =&gt; ReaderT SqlBackend m ()</span><span>
+</span><a name="line-140"></a><span class="hs-comment">-- multiplyAge = updateWhere [UserName ==. \&quot;SPJ\&quot; ] [UserAge *=. 2]</span><span>
+</span><a name="line-141"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-142"></a><span class="hs-comment">--</span><span>
+</span><a name="line-143"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-144"></a><span class="hs-comment">--</span><span>
+</span><a name="line-145"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-146"></a><span class="hs-comment">-- &gt; |id   |name |age     |</span><span>
+</span><a name="line-147"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-148"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40 -&gt; 80|</span><span>
+</span><a name="line-149"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-150"></a><span class="hs-comment">-- &gt; |2    |Simon|41      |</span><span>
+</span><a name="line-151"></a><span class="hs-comment">-- &gt; +-----+-----+--------+</span><span>
+</span><a name="line-152"></a><span>
+</span><a name="line-153"></a><span>
+</span><a name="line-154"></a><a name="local-6989586621679148242"><a href="#local-6989586621679148242"><span class="hs-identifier">f</span></a></a><span> </span><a name="%2A%3D."><a href="Database.Persist.html#%2A%3D."><span class="hs-operator">*=.</span></a></a><span> </span><a name="local-6989586621679148243"><a href="#local-6989586621679148243"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Update"><span class="hs-identifier hs-var">Update</span></a><span> </span><a href="#local-6989586621679148242"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679148243"><span class="hs-identifier hs-var">a</span></a><span> </span><a href="Database.Persist.Types.Base.html#Multiply"><span class="hs-identifier hs-var">Multiply</span></a><span>
+</span><a name="line-155"></a><span>
+</span><a name="line-156"></a><span class="hs-comment">-- | Assign a field by division (@/=@).</span><span>
+</span><a name="line-157"></a><span class="hs-comment">--</span><span>
+</span><a name="line-158"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-159"></a><span class="hs-comment">--</span><span>
+</span><a name="line-160"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-161"></a><span class="hs-comment">-- divideAge :: MonadIO m =&gt; ReaderT SqlBackend m ()</span><span>
+</span><a name="line-162"></a><span class="hs-comment">-- divideAge = updateWhere [UserName ==. \&quot;SPJ\&quot; ] [UserAge /=. 2]</span><span>
+</span><a name="line-163"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-164"></a><span class="hs-comment">--</span><span>
+</span><a name="line-165"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-166"></a><span class="hs-comment">--</span><span>
+</span><a name="line-167"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-168"></a><span class="hs-comment">-- &gt; |id   |name |age      |</span><span>
+</span><a name="line-169"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-170"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40 -&gt; 20 |</span><span>
+</span><a name="line-171"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-172"></a><span class="hs-comment">-- &gt; |2    |Simon|41       |</span><span>
+</span><a name="line-173"></a><span class="hs-comment">-- &gt; +-----+-----+---------+</span><span>
+</span><a name="line-174"></a><span>
+</span><a name="line-175"></a><a name="local-6989586621679148244"><a href="#local-6989586621679148244"><span class="hs-identifier">f</span></a></a><span> </span><a name="%2F%3D."><a href="Database.Persist.html#%2F%3D."><span class="hs-operator">/=.</span></a></a><span> </span><a name="local-6989586621679148245"><a href="#local-6989586621679148245"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Update"><span class="hs-identifier hs-var">Update</span></a><span> </span><a href="#local-6989586621679148244"><span class="hs-identifier hs-var">f</span></a><span> </span><a href="#local-6989586621679148245"><span class="hs-identifier hs-var">a</span></a><span> </span><a href="Database.Persist.Types.Base.html#Divide"><span class="hs-identifier hs-var">Divide</span></a><span>
+</span><a name="line-176"></a><span>
+</span><a name="line-177"></a><span class="hs-keyword">infix</span><span> </span><span class="hs-number">4</span><span> </span><a href="Database.Persist.html#%3D%3D."><span class="hs-operator hs-var">==.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%3C."><span class="hs-operator hs-var">&lt;.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%3C%3D."><span class="hs-operator hs-var">&lt;=.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%3E."><span class="hs-operator hs-var">&gt;.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%3E%3D."><span class="hs-operator hs-var">&gt;=.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%21%3D."><span class="hs-operator hs-var">!=.</span></a><span>
+</span><a name="line-178"></a><span class="hs-special">(</span><span class="hs-operator">==.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">!=.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">&lt;.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">&lt;=.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">&gt;.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">&gt;=.</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span>
+</span><a name="line-179"></a><span>  </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679148232"><a href="#local-6989586621679148232"><span class="hs-identifier">v</span></a></a><span> </span><a name="local-6989586621679148233"><a href="#local-6989586621679148233"><span class="hs-identifier">typ</span></a></a><span class="hs-operator">.</span><span>  </span><a href="Database.Persist.Class.PersistField.html#PersistField"><span class="hs-identifier hs-type">PersistField</span></a><span> </span><a href="#local-6989586621679148233"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#EntityField"><span class="hs-identifier hs-type">EntityField</span></a><span> </span><a href="#local-6989586621679148232"><span class="hs-identifier hs-type">v</span></a><span> </span><a href="#local-6989586621679148233"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="#local-6989586621679148233"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-type">Filter</span></a><span> </span><a href="#local-6989586621679148232"><span class="hs-identifier hs-type">v</span></a><span>
+</span><a name="line-180"></a><span>
+</span><a name="line-181"></a><span class="hs-comment">-- | Check for equality.</span><span>
+</span><a name="line-182"></a><span class="hs-comment">--</span><span>
+</span><a name="line-183"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-184"></a><span class="hs-comment">--</span><span>
+</span><a name="line-185"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-186"></a><span class="hs-comment">-- selectSPJ :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-187"></a><span class="hs-comment">-- selectSPJ = selectList [UserName ==. \&quot;SPJ\&quot; ] []</span><span>
+</span><a name="line-188"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-189"></a><span class="hs-comment">--</span><span>
+</span><a name="line-190"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-191"></a><span class="hs-comment">--</span><span>
+</span><a name="line-192"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-193"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-194"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-195"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40   |</span><span>
+</span><a name="line-196"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-197"></a><span>
+</span><a name="line-198"></a><a name="local-6989586621679148246"><a href="#local-6989586621679148246"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3D%3D."><a href="Database.Persist.html#%3D%3D."><span class="hs-operator">==.</span></a></a><span> </span><a name="local-6989586621679148247"><a href="#local-6989586621679148247"><span class="hs-identifier">a</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148246"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679148247"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#Eq"><span class="hs-identifier hs-var">Eq</span></a><span>
+</span><a name="line-199"></a><span>
+</span><a name="line-200"></a><span class="hs-comment">-- | Non-equality check.</span><span>
+</span><a name="line-201"></a><span class="hs-comment">--</span><span>
+</span><a name="line-202"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-203"></a><span class="hs-comment">--</span><span>
+</span><a name="line-204"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-205"></a><span class="hs-comment">-- selectSimon :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-206"></a><span class="hs-comment">-- selectSimon = selectList [UserName !=. \&quot;SPJ\&quot; ] []</span><span>
+</span><a name="line-207"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-208"></a><span class="hs-comment">--</span><span>
+</span><a name="line-209"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-210"></a><span class="hs-comment">--</span><span>
+</span><a name="line-211"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-212"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-213"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-214"></a><span class="hs-comment">-- &gt; |2    |Simon|41   |</span><span>
+</span><a name="line-215"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-216"></a><span>
+</span><a name="line-217"></a><a name="local-6989586621679148248"><a href="#local-6989586621679148248"><span class="hs-identifier">f</span></a></a><span> </span><a name="%21%3D."><a href="Database.Persist.html#%21%3D."><span class="hs-operator">!=.</span></a></a><span> </span><a name="local-6989586621679148249"><a href="#local-6989586621679148249"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148248"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679148249"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#Ne"><span class="hs-identifier hs-var">Ne</span></a><span>
+</span><a name="line-218"></a><span>
+</span><a name="line-219"></a><span class="hs-comment">-- | Less-than check.</span><span>
+</span><a name="line-220"></a><span class="hs-comment">--</span><span>
+</span><a name="line-221"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-222"></a><span class="hs-comment">--</span><span>
+</span><a name="line-223"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-224"></a><span class="hs-comment">-- selectLessAge :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-225"></a><span class="hs-comment">-- selectLessAge = selectList [UserAge &lt;. 41 ] []</span><span>
+</span><a name="line-226"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-227"></a><span class="hs-comment">--</span><span>
+</span><a name="line-228"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-229"></a><span class="hs-comment">--</span><span>
+</span><a name="line-230"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-231"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-232"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-233"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40   |</span><span>
+</span><a name="line-234"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-235"></a><span>
+</span><a name="line-236"></a><a name="local-6989586621679148250"><a href="#local-6989586621679148250"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3C."><a href="Database.Persist.html#%3C."><span class="hs-operator">&lt;.</span></a></a><span> </span><a name="local-6989586621679148251"><a href="#local-6989586621679148251"><span class="hs-identifier">a</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148250"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679148251"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#Lt"><span class="hs-identifier hs-var">Lt</span></a><span>
+</span><a name="line-237"></a><span>
+</span><a name="line-238"></a><span class="hs-comment">-- | Less-than or equal check.</span><span>
+</span><a name="line-239"></a><span class="hs-comment">--</span><span>
+</span><a name="line-240"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-241"></a><span class="hs-comment">--</span><span>
+</span><a name="line-242"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-243"></a><span class="hs-comment">-- selectLessEqualAge :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-244"></a><span class="hs-comment">-- selectLessEqualAge = selectList [UserAge &lt;=. 40 ] []</span><span>
+</span><a name="line-245"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-246"></a><span class="hs-comment">--</span><span>
+</span><a name="line-247"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-248"></a><span class="hs-comment">--</span><span>
+</span><a name="line-249"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-250"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-251"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-252"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40   |</span><span>
+</span><a name="line-253"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-254"></a><span>
+</span><a name="line-255"></a><a name="local-6989586621679148252"><a href="#local-6989586621679148252"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3C%3D."><a href="Database.Persist.html#%3C%3D."><span class="hs-operator">&lt;=.</span></a></a><span> </span><a name="local-6989586621679148253"><a href="#local-6989586621679148253"><span class="hs-identifier">a</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148252"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679148253"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#Le"><span class="hs-identifier hs-var">Le</span></a><span>
+</span><a name="line-256"></a><span>
+</span><a name="line-257"></a><span class="hs-comment">-- | Greater-than check.</span><span>
+</span><a name="line-258"></a><span class="hs-comment">--</span><span>
+</span><a name="line-259"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-260"></a><span class="hs-comment">--</span><span>
+</span><a name="line-261"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-262"></a><span class="hs-comment">-- selectGreaterAge :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-263"></a><span class="hs-comment">-- selectGreaterAge = selectList [UserAge &gt;. 40 ] []</span><span>
+</span><a name="line-264"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-265"></a><span class="hs-comment">--</span><span>
+</span><a name="line-266"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-267"></a><span class="hs-comment">--</span><span>
+</span><a name="line-268"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-269"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-270"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-271"></a><span class="hs-comment">-- &gt; |2    |Simon|41   |</span><span>
+</span><a name="line-272"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-273"></a><span>
+</span><a name="line-274"></a><a name="local-6989586621679148254"><a href="#local-6989586621679148254"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3E."><a href="Database.Persist.html#%3E."><span class="hs-operator">&gt;.</span></a></a><span> </span><a name="local-6989586621679148255"><a href="#local-6989586621679148255"><span class="hs-identifier">a</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148254"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679148255"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#Gt"><span class="hs-identifier hs-var">Gt</span></a><span>
+</span><a name="line-275"></a><span>
+</span><a name="line-276"></a><span class="hs-comment">-- | Greater-than or equal check.</span><span>
+</span><a name="line-277"></a><span class="hs-comment">--</span><span>
+</span><a name="line-278"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-279"></a><span class="hs-comment">--</span><span>
+</span><a name="line-280"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-281"></a><span class="hs-comment">-- selectGreaterEqualAge :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-282"></a><span class="hs-comment">-- selectGreaterEqualAge = selectList [UserAge &gt;=. 41 ] []</span><span>
+</span><a name="line-283"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-284"></a><span class="hs-comment">--</span><span>
+</span><a name="line-285"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-286"></a><span class="hs-comment">--</span><span>
+</span><a name="line-287"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-288"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-289"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-290"></a><span class="hs-comment">-- &gt; |2    |Simon|41   |</span><span>
+</span><a name="line-291"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-292"></a><span>
+</span><a name="line-293"></a><a name="local-6989586621679148256"><a href="#local-6989586621679148256"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3E%3D."><a href="Database.Persist.html#%3E%3D."><span class="hs-operator">&gt;=.</span></a></a><span> </span><a name="local-6989586621679148257"><a href="#local-6989586621679148257"><span class="hs-identifier">a</span></a></a><span>  </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148256"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Left</span><span> </span><a href="#local-6989586621679148257"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#Ge"><span class="hs-identifier hs-var">Ge</span></a><span>
+</span><a name="line-294"></a><span>
+</span><a name="line-295"></a><span class="hs-keyword">infix</span><span> </span><span class="hs-number">4</span><span> </span><a href="Database.Persist.html#%3C-."><span class="hs-operator hs-var">&lt;-.</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.html#%2F%3C-."><span class="hs-operator hs-var">/&lt;-.</span></a><span>
+</span><a name="line-296"></a><span class="hs-special">(</span><span class="hs-operator">&lt;-.</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="hs-operator">/&lt;-.</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679148230"><a href="#local-6989586621679148230"><span class="hs-identifier">v</span></a></a><span> </span><a name="local-6989586621679148231"><a href="#local-6989586621679148231"><span class="hs-identifier">typ</span></a></a><span class="hs-operator">.</span><span>  </span><a href="Database.Persist.Class.PersistField.html#PersistField"><span class="hs-identifier hs-type">PersistField</span></a><span> </span><a href="#local-6989586621679148231"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#EntityField"><span class="hs-identifier hs-type">EntityField</span></a><span> </span><a href="#local-6989586621679148230"><span class="hs-identifier hs-type">v</span></a><span> </span><a href="#local-6989586621679148231"><span class="hs-identifier hs-type">typ</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><a href="#local-6989586621679148231"><span class="hs-identifier hs-type">typ</span></a><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-type">Filter</span></a><span> </span><a href="#local-6989586621679148230"><span class="hs-identifier hs-type">v</span></a><span>
+</span><a name="line-297"></a><span>
+</span><a name="line-298"></a><span class="hs-comment">-- | Check if value is in given list.</span><span>
+</span><a name="line-299"></a><span class="hs-comment">--</span><span>
+</span><a name="line-300"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-301"></a><span class="hs-comment">--</span><span>
+</span><a name="line-302"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-303"></a><span class="hs-comment">-- selectUsers :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-304"></a><span class="hs-comment">-- selectUsers = selectList [UserAge &lt;-. [40, 41]] []</span><span>
+</span><a name="line-305"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-306"></a><span class="hs-comment">--</span><span>
+</span><a name="line-307"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-308"></a><span class="hs-comment">--</span><span>
+</span><a name="line-309"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-310"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-311"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-312"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40   |</span><span>
+</span><a name="line-313"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-314"></a><span class="hs-comment">-- &gt; |2    |Simon|41   |</span><span>
+</span><a name="line-315"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-316"></a><span class="hs-comment">--</span><span>
+</span><a name="line-317"></a><span class="hs-comment">--</span><span>
+</span><a name="line-318"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-319"></a><span class="hs-comment">-- selectSPJ :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-320"></a><span class="hs-comment">-- selectSPJ = selectList [UserAge &lt;-. [40]] []</span><span>
+</span><a name="line-321"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-322"></a><span class="hs-comment">--</span><span>
+</span><a name="line-323"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-324"></a><span class="hs-comment">--</span><span>
+</span><a name="line-325"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-326"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-327"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-328"></a><span class="hs-comment">-- &gt; |1    |SPJ  |40   |</span><span>
+</span><a name="line-329"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-330"></a><span>
+</span><a name="line-331"></a><a name="local-6989586621679148258"><a href="#local-6989586621679148258"><span class="hs-identifier">f</span></a></a><span> </span><a name="%3C-."><a href="Database.Persist.html#%3C-."><span class="hs-operator">&lt;-.</span></a></a><span> </span><a name="local-6989586621679148259"><a href="#local-6989586621679148259"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148258"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Right</span><span> </span><a href="#local-6989586621679148259"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#In"><span class="hs-identifier hs-var">In</span></a><span>
+</span><a name="line-332"></a><span>
+</span><a name="line-333"></a><span class="hs-comment">-- | Check if value is not in given list.</span><span>
+</span><a name="line-334"></a><span class="hs-comment">--</span><span>
+</span><a name="line-335"></a><span class="hs-comment">-- === __Example usage__</span><span>
+</span><a name="line-336"></a><span class="hs-comment">--</span><span>
+</span><a name="line-337"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-338"></a><span class="hs-comment">-- selectSimon :: MonadIO m =&gt; ReaderT SqlBackend m [Entity User]</span><span>
+</span><a name="line-339"></a><span class="hs-comment">-- selectSimon = selectList [UserAge /&lt;-. [40]] []</span><span>
+</span><a name="line-340"></a><span class="hs-comment">-- @</span><span>
+</span><a name="line-341"></a><span class="hs-comment">--</span><span>
+</span><a name="line-342"></a><span class="hs-comment">-- The above query when applied on &lt;#dataset dataset-1&gt;, will produce this:</span><span>
+</span><a name="line-343"></a><span class="hs-comment">--</span><span>
+</span><a name="line-344"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-345"></a><span class="hs-comment">-- &gt; |id   |name |age  |</span><span>
+</span><a name="line-346"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-347"></a><span class="hs-comment">-- &gt; |2    |Simon|41   |</span><span>
+</span><a name="line-348"></a><span class="hs-comment">-- &gt; +-----+-----+-----+</span><span>
+</span><a name="line-349"></a><span>
+</span><a name="line-350"></a><a name="local-6989586621679148260"><a href="#local-6989586621679148260"><span class="hs-identifier">f</span></a></a><span> </span><a name="%2F%3C-."><a href="Database.Persist.html#%2F%3C-."><span class="hs-operator">/&lt;-.</span></a></a><span> </span><a name="local-6989586621679148261"><a href="#local-6989586621679148261"><span class="hs-identifier">a</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-var">Filter</span></a><span> </span><a href="#local-6989586621679148260"><span class="hs-identifier hs-var">f</span></a><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">Right</span><span> </span><a href="#local-6989586621679148261"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">)</span><span> </span><a href="Database.Persist.Types.Base.html#NotIn"><span class="hs-identifier hs-var">NotIn</span></a><span>
+</span><a name="line-351"></a><span>
+</span><a name="line-352"></a><span class="hs-keyword">infixl</span><span> </span><span class="hs-number">3</span><span> </span><a href="Database.Persist.html#%7C%7C."><span class="hs-operator hs-var">||.</span></a><span>
+</span><a name="line-353"></a><span class="hs-special">(</span><span class="hs-operator">||.</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><a name="local-6989586621679148229"><a href="#local-6989586621679148229"><span class="hs-identifier">v</span></a></a><span class="hs-operator">.</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-type">Filter</span></a><span> </span><a href="#local-6989586621679148229"><span class="hs-identifier hs-type">v</span></a><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-type">Filter</span></a><span> </span><a href="#local-6989586621679148229"><span class="hs-identifier hs-type">v</span></a><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#Filter"><span class="hs-identifier hs-type">Filter</span></a><span> </span><a href="#local-6989586621679148229"><span class="hs-identifier hs-type">v</span></a><span class="hs-special">]</span><span>
+</span><a name="line-354"></a><span>
+</span><a name="line-355"></a><span class="hs-comment">-- | The OR of two lists of filters. For example:</span><span>
+</span><a name="line-356"></a><span class="hs-comment">--</span><span>
+</span><a name="line-357"></a><span class="hs-comment">-- &gt; selectList</span><span>
+</span><a name="line-358"></a><span class="hs-comment">-- &gt;     ([ PersonAge &gt;. 25</span><span>
+</span><a name="line-359"></a><span class="hs-comment">-- &gt;      , PersonAge &lt;. 30 ] ||.</span><span>
+</span><a name="line-360"></a><span class="hs-comment">-- &gt;      [ PersonIncome &gt;. 15000</span><span>
+</span><a name="line-361"></a><span class="hs-comment">-- &gt;      , PersonIncome &lt;. 25000 ])</span><span>
+</span><a name="line-362"></a><span class="hs-comment">-- &gt;     []</span><span>
+</span><a name="line-363"></a><span class="hs-comment">--</span><span>
+</span><a name="line-364"></a><span class="hs-comment">-- will filter records where a person's age is between 25 and 30 /or/ a</span><span>
+</span><a name="line-365"></a><span class="hs-comment">-- person's income is between (15000 and 25000).</span><span>
+</span><a name="line-366"></a><span class="hs-comment">--</span><span>
+</span><a name="line-367"></a><span class="hs-comment">-- If you are looking for an @(&amp;&amp;.)@ operator to do @(A AND B AND (C OR D))@</span><span>
+</span><a name="line-368"></a><span class="hs-comment">-- you can use the @(++)@ operator instead as there is no @(&amp;&amp;.)@. For</span><span>
+</span><a name="line-369"></a><span class="hs-comment">-- example:</span><span>
+</span><a name="line-370"></a><span class="hs-comment">--</span><span>
+</span><a name="line-371"></a><span class="hs-comment">-- &gt; selectList</span><span>
+</span><a name="line-372"></a><span class="hs-comment">-- &gt;     ([ PersonAge &gt;. 25</span><span>
+</span><a name="line-373"></a><span class="hs-comment">-- &gt;      , PersonAge &lt;. 30 ] ++</span><span>
+</span><a name="line-374"></a><span class="hs-comment">-- &gt;     ([PersonCategory ==. 1] ||.</span><span>
+</span><a name="line-375"></a><span class="hs-comment">-- &gt;      [PersonCategory ==. 5]))</span><span>
+</span><a name="line-376"></a><span class="hs-comment">-- &gt;     []</span><span>
+</span><a name="line-377"></a><span class="hs-comment">--</span><span>
+</span><a name="line-378"></a><span class="hs-comment">-- will filter records where a person's age is between 25 and 30 /and/</span><span>
+</span><a name="line-379"></a><span class="hs-comment">-- (person's category is either 1 or 5).</span><span>
+</span><a name="line-380"></a><a name="local-6989586621679148262"><a href="#local-6989586621679148262"><span class="hs-identifier">a</span></a></a><span> </span><a name="%7C%7C."><a href="Database.Persist.html#%7C%7C."><span class="hs-operator">||.</span></a></a><span> </span><a name="local-6989586621679148263"><a href="#local-6989586621679148263"><span class="hs-identifier">b</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#FilterOr"><span class="hs-identifier hs-var">FilterOr</span></a><span>  </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#FilterAnd"><span class="hs-identifier hs-var">FilterAnd</span></a><span> </span><a href="#local-6989586621679148262"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">,</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#FilterAnd"><span class="hs-identifier hs-var">FilterAnd</span></a><span> </span><a href="#local-6989586621679148263"><span class="hs-identifier hs-var">b</span></a><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><a name="line-381"></a><span>
+</span><a name="line-382"></a><span class="hs-comment">-- | Convert list of 'PersistValue's into textual representation of JSON</span><span>
+</span><a name="line-383"></a><span class="hs-comment">-- object. This is a type-constrained synonym for 'toJsonText'.</span><span>
+</span><a name="line-384"></a><span class="hs-identifier">listToJSON</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Types.Base.html#PersistValue"><span class="hs-identifier hs-type">PersistValue</span></a><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">T.Text</span><span>
+</span><a name="line-385"></a><a name="listToJSON"><a href="Database.Persist.html#listToJSON"><span class="hs-identifier">listToJSON</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.html#toJsonText"><span class="hs-identifier hs-var">toJsonText</span></a><span>
+</span><a name="line-386"></a><span>
+</span><a name="line-387"></a><span class="hs-comment">-- | Convert map (list of tuples) into textual representation of JSON</span><span>
+</span><a name="line-388"></a><span class="hs-comment">-- object. This is a type-constrained synonym for 'toJsonText'.</span><span>
+</span><a name="line-389"></a><span class="hs-identifier">mapToJSON</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="hs-identifier hs-type">T.Text</span><span class="hs-special">,</span><span> </span><a href="Database.Persist.Types.Base.html#PersistValue"><span class="hs-identifier hs-type">PersistValue</span></a><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">T.Text</span><span>
+</span><a name="line-390"></a><a name="mapToJSON"><a href="Database.Persist.html#mapToJSON"><span class="hs-identifier">mapToJSON</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Database.Persist.html#toJsonText"><span class="hs-identifier hs-var">toJsonText</span></a><span>
+</span><a name="line-391"></a><span>
+</span><a name="line-392"></a><span class="hs-comment">-- | A more general way to convert instances of `ToJSON` type class to</span><span>
+</span><a name="line-393"></a><span class="hs-comment">-- strict text 'T.Text'.</span><span>
+</span><a name="line-394"></a><span class="hs-identifier">toJsonText</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">ToJSON</span><span> </span><a href="#local-6989586621679148228"><span class="hs-identifier hs-type">j</span></a><span> </span><span class="hs-glyph">=&gt;</span><span> </span><a href="#local-6989586621679148228"><span class="hs-identifier hs-type">j</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-identifier hs-type">T.Text</span><span>
+</span><a name="line-395"></a><span class="hs-cpp">#if MIN_VERSION_aeson(0, 7, 0)
+</span><a name="toJsonText"><a href="Database.Persist.html#toJsonText"><span class="hs-identifier">toJsonText</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">toStrict</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">toLazyText</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">encodeToTextBuilder</span><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">toJSON</span><span>
+</span><a name="line-397"></a><span class="hs-cpp">#else
+</span><span class="hs-identifier">toJsonText</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">toStrict</span><span> </span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">toLazyText</span><span> </span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">fromValue</span><span> </span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">toJSON</span><span>
+</span><a name="line-399"></a><span class="hs-cpp">#endif
+</span><span>
+</span><a name="line-401"></a><span class="hs-comment">-- | FIXME What's this exactly?</span><span>
+</span><a name="line-402"></a><span class="hs-identifier">limitOffsetOrder</span><span> </span><span class="hs-glyph">::</span><span> </span><a href="Database.Persist.Class.PersistEntity.html#PersistEntity"><span class="hs-identifier hs-type">PersistEntity</span></a><span> </span><a href="#local-6989586621679148227"><span class="hs-identifier hs-type">val</span></a><span>
+</span><a name="line-403"></a><span>  </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#SelectOpt"><span class="hs-identifier hs-type">SelectOpt</span></a><span> </span><a href="#local-6989586621679148227"><span class="hs-identifier hs-type">val</span></a><span class="hs-special">]</span><span>
+</span><a name="line-404"></a><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Int</span><span class="hs-special">,</span><span> </span><span class="hs-identifier hs-type">Int</span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><a href="Database.Persist.Class.PersistEntity.html#SelectOpt"><span class="hs-identifier hs-type">SelectOpt</span></a><span> </span><a href="#local-6989586621679148227"><span class="hs-identifier hs-type">val</span></a><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><a name="line-405"></a><a name="limitOffsetOrder"><a href="Database.Persist.html#limitOffsetOrder"><span class="hs-identifier">limitOffsetOrder</span></a></a><span> </span><a name="local-6989586621679148264"><a href="#local-6989586621679148264"><span class="hs-identifier">opts</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-406"></a><span>    </span><span class="hs-identifier hs-var">foldr</span><span> </span><a href="#local-6989586621679148265"><span class="hs-identifier hs-var">go</span></a><span> </span><span class="hs-special">(</span><span class="hs-number">0</span><span class="hs-special">,</span><span> </span><span class="hs-number">0</span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><a href="#local-6989586621679148264"><span class="hs-identifier hs-var">opts</span></a><span>
+</span><a name="line-407"></a><span>  </span><span class="hs-keyword">where</span><span>
+</span><a name="line-408"></a><span>    </span><a name="local-6989586621679148265"><a href="#local-6989586621679148265"><span class="hs-identifier">go</span></a></a><span> </span><span class="hs-special">(</span><a href="Database.Persist.Class.PersistEntity.html#LimitTo"><span class="hs-identifier hs-var">LimitTo</span></a><span> </span><a name="local-6989586621679148266"><a href="#local-6989586621679148266"><span class="hs-identifier">l</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">_</span><span class="hs-special">,</span><span> </span><a name="local-6989586621679148267"><a href="#local-6989586621679148267"><span class="hs-identifier">b</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679148268"><a href="#local-6989586621679148268"><span class="hs-identifier">c</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="#local-6989586621679148266"><span class="hs-identifier hs-var">l</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679148267"><span class="hs-identifier hs-var">b</span></a><span> </span><span class="hs-special">,</span><a href="#local-6989586621679148268"><span class="hs-identifier hs-var">c</span></a><span class="hs-special">)</span><span>
+</span><a name="line-409"></a><span>    </span><span class="hs-identifier">go</span><span> </span><span class="hs-special">(</span><a href="Database.Persist.Class.PersistEntity.html#OffsetBy"><span class="hs-identifier hs-var">OffsetBy</span></a><span> </span><a name="local-6989586621679148269"><a href="#local-6989586621679148269"><span class="hs-identifier">o</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><a name="local-6989586621679148270"><a href="#local-6989586621679148270"><span class="hs-identifier">a</span></a></a><span class="hs-special">,</span><span> </span><span class="hs-identifier">_</span><span class="hs-special">,</span><span> </span><a name="local-6989586621679148271"><a href="#local-6989586621679148271"><span class="hs-identifier">c</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="#local-6989586621679148270"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679148269"><span class="hs-identifier hs-var">o</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679148271"><span class="hs-identifier hs-var">c</span></a><span class="hs-special">)</span><span>
+</span><a name="line-410"></a><span>    </span><span class="hs-identifier">go</span><span> </span><a name="local-6989586621679148272"><a href="#local-6989586621679148272"><span class="hs-identifier">x</span></a></a><span> </span><span class="hs-special">(</span><a name="local-6989586621679148273"><a href="#local-6989586621679148273"><span class="hs-identifier">a</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679148274"><a href="#local-6989586621679148274"><span class="hs-identifier">b</span></a></a><span class="hs-special">,</span><span> </span><a name="local-6989586621679148275"><a href="#local-6989586621679148275"><span class="hs-identifier">c</span></a></a><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><a href="#local-6989586621679148273"><span class="hs-identifier hs-var">a</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679148274"><span class="hs-identifier hs-var">b</span></a><span class="hs-special">,</span><span> </span><a href="#local-6989586621679148272"><span class="hs-identifier hs-var">x</span></a><span> </span><span class="hs-glyph">:</span><span> </span><a href="#local-6989586621679148275"><span class="hs-identifier hs-var">c</span></a><span class="hs-special">)</span><span>
+</span><a name="line-411"></a></pre></body></html>
