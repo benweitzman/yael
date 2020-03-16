@@ -28,8 +28,8 @@ jobs:
     - name: Cache .stack
       uses: actions/cache@v1.1.2
       with:
-        path: ~/.stack
-        key: dot-stack
+        path: /home/runner/.stack/
+        key: ${{ hashFiles('**/stack.yaml.lock') }}
 
     - name: Cache .stack-work
       uses: actions/cache@v1.1.2
@@ -40,6 +40,9 @@ jobs:
     # Runs a single command using the runners shell
     - name: Build
       run: stack build
+
+    - name: Test
+      run: stack test
 
     # Runs a set of commands using the runners shell
     - name: Run a multi-line script
