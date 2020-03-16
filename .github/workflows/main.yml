@@ -39,10 +39,25 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: Build
-      run: stack build
+      run: stack build --test --no-run-tests --coverage
 
     - name: Test
-      run: stack test
+      run: stack test --coverage
+
+    - name: Create public dir
+      run: mkdir public
+
+    - name: Copy code coverage
+      run: mv $(stack path --local-hpc-root) public/coverage/
+
+    - name: Copy docs
+      run: mv $(stack path --local-doc-root) public/
+
+    - name: Deploy to pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
 
     # Runs a set of commands using the runners shell
     - name: Run a multi-line script
