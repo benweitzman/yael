@@ -1,0 +1,71 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 17440cb921598fe3302d2ee7c0a7e7728dfcf2e124ff43e0be86e7dd2933d9bf
+
+name:           yael-http-opentracing
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/benweitzman/yael#readme>
+homepage:       https://github.com/benweitzman/yael#readme
+bug-reports:    https://github.com/benweitzman/yael/issues
+author:         Ben Weitzmn
+maintainer:     benweitzman@gmail.com
+copyright:      2020 Ben Weitzman
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/benweitzman/yael
+
+library
+  exposed-modules:
+      Yael.Eff.HTTP.Traced
+  other-modules:
+      Paths_yael_http_opentracing
+  hs-source-dirs:
+      src
+  default-extensions: TypeFamilies DataKinds ConstraintKinds TypeOperators NamedFieldPuns DerivingStrategies GeneralizedNewtypeDeriving RankNTypes FlexibleContexts FlexibleInstances MultiParamTypeClasses DefaultSignatures TypeApplications ScopedTypeVariables StrictData PolyKinds DeriveGeneric PatternSynonyms GADTs StandaloneDeriving FunctionalDependencies
+  build-depends:
+      base >=4.7 && <5
+    , http-client
+    , http-types
+    , lens
+    , network-uri
+    , opentracing
+    , text
+    , transformers
+    , yael
+    , yael-http
+    , yael-opentracing
+  default-language: Haskell2010
+
+test-suite yael-http-opentracing-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_yael_http_opentracing
+  hs-source-dirs:
+      test
+  default-extensions: TypeFamilies DataKinds ConstraintKinds TypeOperators NamedFieldPuns DerivingStrategies GeneralizedNewtypeDeriving RankNTypes FlexibleContexts FlexibleInstances MultiParamTypeClasses DefaultSignatures TypeApplications ScopedTypeVariables StrictData PolyKinds DeriveGeneric PatternSynonyms GADTs StandaloneDeriving FunctionalDependencies
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , http-client
+    , http-types
+    , lens
+    , network-uri
+    , opentracing
+    , text
+    , transformers
+    , yael
+    , yael-http
+    , yael-http-opentracing
+    , yael-opentracing
+  default-language: Haskell2010
