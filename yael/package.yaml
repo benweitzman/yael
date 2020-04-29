@@ -36,6 +36,8 @@ library:
   - Yael.Eff.Error
   - Yael.Eff.State
   - Yael.Eff.Reader
+  - Yael.Eff.Mock
+  - Yael.Eff.Builder
 
 executables:
   yael-exe:
