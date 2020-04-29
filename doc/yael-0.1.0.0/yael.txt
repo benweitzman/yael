@@ -158,6 +158,37 @@ async :: HasEff Async f m => EffT f m () -> EffT f m ThreadId
 concurrentAsync :: MonadBaseControl IO m => Async m
 noAsync :: (MonadIO m, Monad n) => m (Async n)
 
+module Yael.Eff.Builder
+
+-- | Run an effectful computation using a set of effect handlers that are
+--   implemented in terms of each other.
+runEffTWith :: EffStack f => Builder f m -> EffT (EffList (ToEffList f)) m a -> m a
+wrapping :: (f m -> g m -> g m) -> (f m -> g m) -> f m -> g m
+infixr 9 `wrapping`
+data EffList fs m
+[EffNil] :: EffList '[] m
+[EffCons] :: f m -> EffList fs m -> EffList (f : fs) m
+class EffStack f where {
+    type family ToEffList f :: [(* -> *) -> *];
+    type ToEffList f = GToEffList (Rep (f EffectProxy));
+}
+build :: EffStack f => Builder f m -> EffList (ToEffList f) m
+build :: (EffStack f, GTo (Rep (f (EffectIdentity m))) (Rep (f EffectProxy)) m, GApply (Rep (Builder f m)) (Rep (f (EffectIdentity m))) (GToEffList (Rep (f EffectProxy))) m, Generic (f (EffectIdentity m)), Generic (Builder f m), ToEffList f ~ GToEffList (Rep (f EffectProxy))) => Builder f m -> EffList (ToEffList f) m
+toEffList :: EffStack f => f (EffectIdentity m) -> EffList (ToEffList f) m
+toEffList :: (EffStack f, Generic (f (EffectIdentity m)), GTo (Rep (f (EffectIdentity m))) (Rep (f EffectProxy)) m, ToEffList f ~ GToEffList (Rep (f EffectProxy))) => f (EffectIdentity m) -> EffList (ToEffList f) m
+data EffectIdentity m
+data EffectBuilder s (m :: * -> *)
+data EffectProxy
+type family Effect f t
+instance forall k1 k2 r (fs :: [k2 -> *]) (m :: k2) (f :: k2 -> *). Yael.Eff.Builder.GApply (GHC.Generics.K1 r (Yael.Eff.Builder.EffList fs m -> f m)) (GHC.Generics.K1 r (f m)) fs m
+instance forall k1 k2 (x :: k2 -> *) (y :: k2 -> *) (m :: [k1 -> *]) (fs :: k1) s (d :: GHC.Generics.Meta). Yael.Eff.Builder.GApply x y m fs => Yael.Eff.Builder.GApply (GHC.Generics.M1 s d x) (GHC.Generics.M1 s d y) m fs
+instance forall k1 k2 (l :: k2 -> *) (l' :: k2 -> *) (m :: [k1 -> *]) (fs :: k1) (r :: k2 -> *) (r' :: k2 -> *). (Yael.Eff.Builder.GApply l l' m fs, Yael.Eff.Builder.GApply r r' m fs) => Yael.Eff.Builder.GApply (l GHC.Generics.:*: r) (l' GHC.Generics.:*: r') m fs
+instance Yael.Eff.Builder.GTo (GHC.Generics.K1 r (f m)) (GHC.Generics.K1 r (Data.Proxy.Proxy f)) m
+instance forall k1 k2 (x :: k2 -> *) (y :: k1 -> *) (m :: * -> *) s (d :: GHC.Generics.Meta). Yael.Eff.Builder.GTo x y m => Yael.Eff.Builder.GTo (GHC.Generics.M1 s d x) (GHC.Generics.M1 s d y) m
+instance forall k1 k2 (l :: k2 -> *) (l' :: k1 -> *) (m :: * -> *) (r :: k2 -> *) (r' :: k1 -> *). (Yael.Eff.Builder.GTo l l' m, Yael.Eff.Builder.GTo r r' m) => Yael.Eff.Builder.GTo (l GHC.Generics.:*: r) (l' GHC.Generics.:*: r') m
+instance Yael.Eff.Project (Yael.Eff.Builder.EffList (f : fs)) f
+instance Yael.Eff.Project (Yael.Eff.Builder.EffList fs) f => Yael.Eff.Project (Yael.Eff.Builder.EffList (g : fs)) f
+
 module Yael.Eff.Data
 newtype Data a m
 Data :: a -> Data a m
@@ -187,6 +218,27 @@ stdoutLog :: MonadIO m => Log m
 handleLog :: MonadIO m => Handle -> Log m
 noLog :: Monad m => Log m
 withCollectLog :: (forall n. Monad n => Log n -> n a) -> (a, [String])
+
+module Yael.Eff.Mock
+type family Args f
+type family Return f
+data MockAction x
+[:=>] :: Args x -> Return x -> MockAction x
+newtype Mock x
+Mock :: [MockAction x] -> Mock x
+[getMockActions] :: Mock x -> [MockAction x]
+type Mocked f m = HKD (f m) Mock
+class Mockable x
+mock :: Mockable x => Mock x -> x
+mocking :: forall f m. (Generic (f m), Construct Identity (f m), ConstraintsB (HKD (f m)), AllB Mockable (HKD (f m))) => Mocked f m -> f m
+instance GHC.Exts.IsList (Yael.Eff.Mock.Mock x)
+instance GHC.Base.Monoid (Yael.Eff.Mock.Mock x)
+instance GHC.Base.Semigroup (Yael.Eff.Mock.Mock x)
+instance GHC.Show.Show (Yael.Eff.Mock.Return x) => GHC.Show.Show (Yael.Eff.Mock.Mock x)
+instance (x Data.Type.Equality.~ Yael.Eff.Mock.Return x) => Yael.Eff.Mock.Mockable x
+instance (GHC.Base.Monad m, x Data.Type.Equality.~ Yael.Eff.Mock.Return (m x)) => Yael.Eff.Mock.Mockable (m x)
+instance (GHC.Classes.Eq x, Yael.Eff.Mock.Mockable y) => Yael.Eff.Mock.Mockable (x -> y)
+instance GHC.Show.Show (Yael.Eff.Mock.Return x) => GHC.Show.Show (Yael.Eff.Mock.MockAction x)
 
 module Yael.Eff.Reader
 data Reader r m
