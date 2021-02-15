@@ -46,7 +46,7 @@ xyZ :: HasEffs '[X, Y] f m => f m -> Z m
 xyZ f = Z
   { _z = \i -> flip runEffT f $ do
       y' <- y
-      q <- (y' *) <$> lift i
+      q <- (y' *) <$> lift _
       (even q ||) <$> x
   }
 

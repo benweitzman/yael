@@ -54,6 +54,7 @@ import qualified Control.Monad.Reader as R
 import Control.Exception.Safe
 import UnliftIO (MonadUnliftIO(..), withUnliftIO, UnliftIO(..))
 import Data.Function ((&))
+import Data.Functor.Compose
 import GHC.TypeLits
 import GHC.Generics
 import Control.Monad.Base
@@ -89,10 +90,6 @@ liftEffT :: (f m -> m a) -> EffT f m a
 liftEffT = EffT
 
 instance MonadUnliftIO m => MonadUnliftIO (EffT f m) where
-  {-# INLINE askUnliftIO #-}
-  askUnliftIO = EffT $ \r ->
-                withUnliftIO $ \u ->
-                return (UnliftIO (unliftIO u . flip runEffT r))
   {-# INLINE withRunInIO #-}
   withRunInIO inner =
     EffT $ \r ->
@@ -116,7 +113,7 @@ instance MonadTrans (EffT f) where
 -- myMethod1 s = withEffT $ \myEffect -> _myMethod1 myEffect s
 -- @
 withEffT :: (HasEff g f m) => (forall n . Monad n => g n -> n a) -> EffT f m a
-withEffT use = withEffT' $ const use
+withEffT use = EffT $ \f -> use (f ^. prj)
 
 -- | Lift a higher-order computation in `g` into `EffT`.
 --

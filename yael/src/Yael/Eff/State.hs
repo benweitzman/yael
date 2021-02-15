@@ -1,12 +1,14 @@
 module Yael.Eff.State where
 
-import Control.Lens
+import Control.Lens (Lens', (&), (.~), (^.))
 import qualified Control.Monad.State as S
 import           Yael.Eff
 import Data.IORef
 import Control.Monad.IO.Class
 import Data.STRef
 import Control.Monad.ST
+import Yael.Eff.Builder
+import GHC.Generics
 
 data State s m = State
   { _get :: m s
@@ -16,14 +18,22 @@ data State s m = State
 get :: s :+ '[State s]
 get = withEffT _get
 
-put :: s -> () :+ '[State s]
-put s = withEffT $ \State{_put} -> _put s
+put :: HasEffs '[State s] f m => s -> EffT f m ()
+put = EffT . flip (_put . {-# SCC prjj #-} (^. {-# SCC resolvePrj #-} prj))
+{-# SPECIALIZE put :: HasEffs '[State s] (AEffList f) m => s -> EffT (AEffList f) m () #-}
+{-# SPECIALIZE put :: Monad m => s -> EffT (AEffList (State s ': fs)) m () #-}
+
+modify :: (s -> s) -> () :+ '[State s]
+modify f = do
+  s <- get
+  put $ f s
 
 mtlState :: S.MonadState s m => State s m
 mtlState = State
   { _get = S.get
   , _put = S.put
   }
+{-# NOINLINE mtlState #-}  
 
 ioRefState :: MonadIO m => IORef s -> State s m
 ioRefState ref = State

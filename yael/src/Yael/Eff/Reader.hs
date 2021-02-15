@@ -1,3 +1,5 @@
+{-# LANGUAGE NoStrictData #-}
+
 module Yael.Eff.Reader where
 
 import Yael.Eff
@@ -18,4 +20,11 @@ mtlReader :: R.MonadReader r m => Reader r m
 mtlReader = Reader
   { _ask = R.ask
   , _local = R.local
+  }
+
+
+constReader :: Monad m => r -> Reader r m
+constReader i = Reader
+  { _ask = return i
+  , _local = error "not const!"
   }

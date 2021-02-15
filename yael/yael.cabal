@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9059dde4d41abd70016d551c1844ddcd19a1cb2e4cafea7b8f142200277d3147
+-- hash: 1cbffbc022c2e81ffc3951a3f2b97e234f0624efe96ef9105d106c2d9d0cf400
 
 name:           yael
 version:        0.1.0.0
@@ -34,14 +34,17 @@ library
       Yael.Eff.Reader
       Yael.Eff.Mock
       Yael.Eff.Builder
+      Yael.Eff.Builder2
   other-modules:
       Paths_yael
   hs-source-dirs:
       src
   default-extensions: TypeFamilies DataKinds ConstraintKinds TypeOperators NamedFieldPuns DerivingStrategies GeneralizedNewtypeDeriving RankNTypes FlexibleContexts FlexibleInstances MultiParamTypeClasses DefaultSignatures TypeApplications ScopedTypeVariables StrictData PolyKinds DeriveGeneric PatternSynonyms GADTs StandaloneDeriving FunctionalDependencies
   build-depends:
-      barbies >=1.1.3.0 && <1.2
+      array
+    , barbies >=1.1.3.0 && <1.2
     , base >=4.7 && <5
+    , deepseq
     , higgledy >=0.3.1.0 && <0.4
     , lens >=4.17.1 && <4.18
     , lifted-base >=0.2.3.12 && <0.3
@@ -62,8 +65,10 @@ executable yael-exe
   default-extensions: TypeFamilies DataKinds ConstraintKinds TypeOperators NamedFieldPuns DerivingStrategies GeneralizedNewtypeDeriving RankNTypes FlexibleContexts FlexibleInstances MultiParamTypeClasses DefaultSignatures TypeApplications ScopedTypeVariables StrictData PolyKinds DeriveGeneric PatternSynonyms GADTs StandaloneDeriving FunctionalDependencies
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      barbies >=1.1.3.0 && <1.2
+      array
+    , barbies >=1.1.3.0 && <1.2
     , base >=4.7 && <5
+    , deepseq
     , higgledy >=0.3.1.0 && <0.4
     , lens
     , lifted-base
@@ -92,8 +97,10 @@ test-suite yael-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , array
     , barbies >=1.1.3.0 && <1.2
     , base >=4.7 && <5
+    , deepseq
     , higgledy >=0.3.1.0 && <0.4
     , hspec
     , lens >=4.17.1 && <4.18
