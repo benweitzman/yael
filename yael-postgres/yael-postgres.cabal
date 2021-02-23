@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 700f2f6f3810caa57f44f8aef6ad710610f8e8c7a246ee6d6890b05b1a0fa7cb
+-- hash: fea7ea728e0ca422fcc3ca0142fd9da92ca7558c533805037b00553c318ec59a
 
 name:           yael-postgres
 version:        0.1.0.0
@@ -43,6 +43,8 @@ library
     , persistent-postgresql
     , postgresql-simple
     , resource-pool
+    , text
+    , transformers
     , unliftio
     , yael >=0.1.0.0 && <0.2
   default-language: Haskell2010
@@ -64,6 +66,8 @@ executable yael-postgres-exe
     , persistent-postgresql
     , postgresql-simple
     , resource-pool
+    , text
+    , transformers
     , unliftio
     , yael >=0.1.0.0 && <0.2
     , yael-postgres
@@ -87,6 +91,8 @@ test-suite yael-postgres-test
     , persistent-postgresql
     , postgresql-simple
     , resource-pool
+    , text
+    , transformers
     , unliftio
     , yael >=0.1.0.0 && <0.2
     , yael-postgres

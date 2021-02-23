@@ -15,7 +15,7 @@ import           Yael.Eff.OpenTracing
 import           Yael.Eff.Persistent
 
 tracePersistent :: (MonadIO m) => Tracing m -> Persistent m -> Persistent m
-tracePersistent t p = Persistent
+tracePersistent t p = p
   { _runPersistent = \tx -> flip runEffT (t :<> p) $ do
       opts <- defaultSpanOpts "runPersistent"
       spanning opts . runPersistent $ do

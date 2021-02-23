@@ -15,6 +15,7 @@ dependencies:
 - base >= 4.7 && < 5
 - yael >= 0.1.0.0 && < 0.2
 - mtl
+- transformers
 - persistent
 - persistent-postgresql
 - unliftio
@@ -22,6 +23,7 @@ dependencies:
 - postgresql-simple
 - monad-control
 - monad-logger
+- text
 
 
 default-extensions:
